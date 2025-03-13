@@ -6,3 +6,5 @@ fake-useragent
 urllib3
 apify-client
 python-dotenv
+ffmpeg
+yt-dlp
