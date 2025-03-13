@@ -65,7 +65,7 @@ def brave_tor_scraper(query):
         driver.quit()
 
 if __name__ == "__main__":
-    results = brave_tor_scraper("test query")
+    results = brave_tor_scraper("Student Loans Income Driven Repayment Plans Are Now Over! | Why Your Credit Score Crashed")
     print(f"\nFound {len(results)} video URLs:")
     for idx, url in enumerate(results, 1):
         print(f"{idx}. {url}")

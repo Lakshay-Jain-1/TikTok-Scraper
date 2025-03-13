@@ -1,0 +1,7 @@
+selenium
+webdriver-manager
+requests
+pysocks
+fake-useragent
+urllib3
+apify-client
