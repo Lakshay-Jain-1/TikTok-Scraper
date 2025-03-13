@@ -1,34 +1,48 @@
+import os
+from dotenv import load_dotenv
 from apify_client import ApifyClient
 
-# Initialize the ApifyClient with your API token
-client = ApifyClient("apify_api_QSbJy3rWtd34pKSRdJg7H1r2MSlD4j2Lq8KO")
+# Load environment variables
+load_dotenv()
 
-# Prepare the Actor input
-run_input = {
-    "excludePinnedPosts": False,
-    "hashtags": ["fyp"],
-    "maxProfilesPerQuery": 20,
-    "proxyCountryCode": "US",
-    "resultsPerPage": 100,
-    "searchQueries": ["Trump"],
-    "searchSection": "/video",
-    "shouldDownloadAvatars": False,
-    "shouldDownloadCovers": False,
-    "shouldDownloadMusicCovers": False,
-    "shouldDownloadSlideshowImages": False,
-    "shouldDownloadSubtitles": False,
-    "shouldDownloadVideos": False,
-}
+def extractVideoUrls(searchQueries=["Trump"],hashtags=["fyp"]):
+    # Get API token
+    API_TOKEN = os.getenv('TIKTOK_SCRAPPER_API_TOKEN')
+    if not API_TOKEN:
+        raise ValueError("API token not found! Set the TIKTOK_SCRAPPER_API_TOKEN environment variable.")
 
-# Run the Actor and wait for it to finish
-run = client.actor("GdWCkxBtKWOsKjdch").call(run_input=run_input)
+    # Initialize the ApifyClient with your API token
+    client = ApifyClient(API_TOKEN)
 
-# Check if the actor ran successfully
-if run["status"] != "SUCCEEDED":
-    print(f"Actor failed with status: {run['status']}")
-    exit(1)
+    # Prepare the Actor input
+    run_input = {
+        "hashtags": hashtags,
+        "resultsPerPage": 3,
+        "profileScrapeSections": ["videos"],
+        "profileSorting": "latest",
+        "excludePinnedPosts": False,
+        "searchQueries": searchQueries, 
+        "searchSection": "",  
+        "maxProfilesPerQuery": 3,  
+        "shouldDownloadVideos": False,
+        "shouldDownloadCovers": False,
+        "shouldDownloadSubtitles": False,
+        "shouldDownloadSlideshowImages": False,
+        "shouldDownloadAvatars": False,
+        "shouldDownloadMusicCovers": False,
+        "proxyCountryCode": "None", 
+    }
 
-# Fetch and print Actor results
-dataset_client = client.dataset(run["defaultDatasetId"])
-for item in dataset_client.iterate_items():
-    print(item)
+
+    run = client.actor("GdWCkxBtKWOsKjdch").call(run_input=run_input)
+
+    # Fetch and extract video URLs from the results
+    video_urls = []
+
+    for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        if "webVideoUrl" in item:
+            video_urls.append(item["webVideoUrl"])
+
+    return video_urls
+
+
