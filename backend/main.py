@@ -33,6 +33,7 @@
 from modules.scrapper import extractVideoUrls
 from modules.downloader import download_videos
 
+
 def main():
     print("Fetching TikTok video URLs...")
     video_urls = extractVideoUrls()
@@ -47,3 +48,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
