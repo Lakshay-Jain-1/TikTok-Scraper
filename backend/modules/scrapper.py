@@ -75,6 +75,3 @@ if __name__ == "__main__":
     test_queries = ["AI technology", "future of robotics"]
     urls = extractVideoUrls(test_queries, max_results=3)
     print("\nExtracted TikTok Video URLs:", urls)
-
-
-
