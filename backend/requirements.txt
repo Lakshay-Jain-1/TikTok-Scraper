@@ -5,3 +5,4 @@ pysocks
 fake-useragent
 urllib3
 apify-client
+python-dotenv
