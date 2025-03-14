@@ -12,6 +12,6 @@ def merging():
     print("Video is merged")
     return 0
 
-merging()
-if __name__=="main":
+
+if __name__=="__main__":
     merging()
