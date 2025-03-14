@@ -1,8 +1,12 @@
 import os
 import yt_dlp
-import time  # Import time module
+import time  
 
-def download_videos(video_urls, download_folder="downloads"):
+def download_videos(video_urls):
+    # Ensure the download folder is outside the script's directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the script's directory
+    download_folder = os.path.abspath(os.path.join(script_dir, "..", "downloads"))  # Move outside
+
     if not os.path.exists(download_folder):
         os.makedirs(download_folder)
 
@@ -32,3 +36,4 @@ def download_videos(video_urls, download_folder="downloads"):
                 time.sleep(5)  # Wait 5 seconds before downloading the next video
             except Exception as e:
                 print(f"Failed to download {url}: {e}")
+
