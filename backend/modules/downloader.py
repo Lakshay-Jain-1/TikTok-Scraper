@@ -36,4 +36,3 @@ def download_videos(video_urls):
                 time.sleep(5)  # Wait 5 seconds before downloading the next video
             except Exception as e:
                 print(f"Failed to download {url}: {e}")
-
