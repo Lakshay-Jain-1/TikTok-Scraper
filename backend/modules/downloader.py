@@ -1,11 +1,14 @@
 import os
 import requests
 from tqdm import tqdm
+from rich.console import Console
+
+console = Console()
 
 # RapidAPI credentials and endpoint
 API_URL = "https://tiktok-video-downloader-api.p.rapidapi.com/media"
 HEADERS = {
-    "x-rapidapi-key": "717065928emshc44f4f175d27c9dp1435b4jsne1eeb37d8cf8",
+    "x-rapidapi-key": "b3cc9a3551msh65998eb88f26cbap163c0cjsnff9c7ca2d8ba",
     "x-rapidapi-host": "tiktok-video-downloader-api.p.rapidapi.com"
 }
 
@@ -60,7 +63,10 @@ def batch_download(video_urls):
     for idx, video_url in enumerate(video_urls, start=1):
         ## For testing purposes
         if idx==4:
-            print("Only 3 videos will get downloaded for testing purposes to decrease the time for testing ")
+            console.print(
+            " To reduce the testing duration, only three videos will be downloaded. ",
+            style="bold white on red"  # This sets bold white text with a blue background
+            )
             break
         print(f"\n Processing Video {idx}/{len(video_urls)}: {video_url}")
         download_url = get_download_url(video_url)

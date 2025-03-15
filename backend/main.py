@@ -22,10 +22,10 @@ run this command winget install ffmpeg
 
 """
 
-def main():
+def main(searchQueries,hashtags,max_results):
     # 1st phase
     print("Fetching TikTok video URLs...")
-    video_urls = extractVideoUrls()
+    video_urls = extractVideoUrls(searchQueries,hashtags,max_results)
     
     # 2nd phase
     if video_urls:
