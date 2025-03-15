@@ -8,4 +8,5 @@ apify-client
 python-dotenv
 ffmpeg
 yt-dlp
-moviepy 
+moviepy
+tqdm 

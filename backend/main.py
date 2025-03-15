@@ -1,5 +1,5 @@
 from modules.scrapper import extractVideoUrls
-from modules.downloader import download_videos
+from modules.downloader import batch_download
 from modules.merge import merging
 
 
@@ -30,7 +30,7 @@ def main():
     # 2nd phase
     if video_urls:
         print(f"Extracted {len(video_urls)} videos.")
-        download_videos(video_urls)
+        batch_download(video_urls)
 
         # 3rd phase
         merging()

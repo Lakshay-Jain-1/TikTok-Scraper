@@ -1,38 +1,71 @@
 import os
-import yt_dlp
-import time  
+import requests
+from tqdm import tqdm
 
-def download_videos(video_urls):
-    # Ensure the download folder is outside the script's directory
-    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the script's directory
-    download_folder = os.path.abspath(os.path.join(script_dir, "..", "downloads"))  # Move outside
+# RapidAPI credentials and endpoint
+API_URL = "https://tiktok-video-downloader-api.p.rapidapi.com/media"
+HEADERS = {
+    "x-rapidapi-key": "717065928emshc44f4f175d27c9dp1435b4jsne1eeb37d8cf8",
+    "x-rapidapi-host": "tiktok-video-downloader-api.p.rapidapi.com"
+}
 
-    if not os.path.exists(download_folder):
-        os.makedirs(download_folder)
+# Folder to store downloads
+DOWNLOAD_FOLDER = "downloads"
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': 'https://www.tiktok.com/'
-    }
+# Ensure the downloads folder exists
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-    cookies = "s_v_web_id=YOUR_COOKIE_HERE"
+def get_download_url(video_url):
+    """Fetches the download URL from the RapidAPI endpoint."""
+    try:
+        response = requests.get(API_URL, headers=HEADERS, params={"videoUrl": video_url})
+        response.raise_for_status()
+        data = response.json()
+        
+        if "downloadUrl" in data:
+            return data["downloadUrl"]
+        else:
+            print(f"❌ Download URL not found for: {video_url}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Error fetching download URL: {e}")
+        return None
 
-    for index, url in enumerate(video_urls, start=1):
-        video_filename = f"video{index}.mp4"
-        ydl_opts = {
-            'outtmpl': os.path.join(download_folder, video_filename),
-            'format': 'mp4',
-            'noplaylist': True,
-            'quiet': False,
-            'http_headers': headers,
-            'cookie': cookies,  # Add TikTok session cookies
-        }
+def download_tiktok_video(download_url, filename):
+    """Downloads the TikTok video with a progress bar."""
+    try:
+        response = requests.get(download_url, stream=True)
+        response.raise_for_status()
+        
+        total_size = int(response.headers.get("content-length", 0))
+        filepath = os.path.join(DOWNLOAD_FOLDER, filename)  # Save in the 'downloads' folder
 
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            try:
-                print(f"Downloading: {url} as {video_filename}")
-                ydl.download([url])
-                print(f"Downloaded successfully: {video_filename}\n")
-                time.sleep(5)  # Wait 5 seconds before downloading the next video
-            except Exception as e:
-                print(f"Failed to download {url}: {e}")
+        with open(filepath, "wb") as file, tqdm(
+            desc=filename,
+            total=total_size,
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024
+        ) as bar:
+            for chunk in response.iter_content(chunk_size=1024):
+                file.write(chunk)
+                bar.update(len(chunk))
+        
+        print(f"Download complete: {filepath}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading video: {e}")
+
+def batch_download(video_urls):
+    """Downloads multiple TikTok videos from a list of URLs."""
+    for idx, video_url in enumerate(video_urls, start=1):
+        ## For testing purposes
+        if idx==4:
+            print("Only 3 videos will get downloaded for testing purposes to decrease the time for testing ")
+            break
+        print(f"\n Processing Video {idx}/{len(video_urls)}: {video_url}")
+        download_url = get_download_url(video_url)
+        if download_url:
+            filename = f"tiktok_video_{idx}.mp4"
+            download_tiktok_video(download_url, filename)
+        else:
+            print(f"⚠️ Skipping video {idx} due to an error.")

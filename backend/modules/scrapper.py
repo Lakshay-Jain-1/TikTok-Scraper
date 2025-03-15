@@ -6,7 +6,7 @@ from apify_client import ApifyClient
 # Load environment variables
 load_dotenv()
 
-def extractVideoUrls(searchQueries=["AI technology"], hashtags=["fyp"], max_results=5):
+def extractVideoUrls(searchQueries=["Trump"], hashtags=["maga"], max_results=5):
     """
     Uses Apify TikTok Scraper to extract video URLs based on search queries and hashtags.
     
