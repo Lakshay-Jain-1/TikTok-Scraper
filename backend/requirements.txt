@@ -10,5 +10,3 @@ ffmpeg
 yt-dlp
 moviepy
 tqdm 
-questionary
-rich
