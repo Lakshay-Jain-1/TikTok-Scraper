@@ -11,3 +11,4 @@ yt-dlp
 moviepy
 tqdm 
 rich
+questionary
