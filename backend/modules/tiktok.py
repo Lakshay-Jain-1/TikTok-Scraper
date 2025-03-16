@@ -2,20 +2,29 @@ from apify_client import ApifyClient
 import time
 
 # Initialize the ApifyClient with your API token
-client = ApifyClient("apify_api")
+client = ApifyClient("apify_api_7Na9Qlv8BaFyHzrkWXF25N1bY76hzj07Xpuv")
 
 # Function to check if a video meets the required criteria
 def is_valid_video(video):
+    print("\nChecking Video:", video.get("webVideoUrl", "No URL"))
+    print("Duration:", video.get("duration", "Unknown"))
+    print("Music Metadata:", video.get("musicMeta", {}).get("musicName"))
+    
+    # Debugging: Temporarily remove the music filter and increase duration limit
     return (
-        video.get("duration", 0) <= 480  # Max 8 min (480 sec)
-        and video.get("musicMeta", {}).get("musicName") is None  # No copyright music
+        video.get("duration", 0) <= 600  # Increased to 10 min for testing
+        # and video.get("musicMeta", {}).get("musicName") is None  # Temporarily disabled
     )
 
 # Function to check if a profile meets the criteria
 def is_valid_profile(profile):
+    print("\nChecking Profile:", profile.get("username", "Unknown"))
+    print("Follower Count:", profile.get("stats", {}).get("followerCount", 0))
+    print("User Type:", profile.get("userType", "Unknown"))
+    
     return (
-        profile.get("stats", {}).get("followerCount", 0) < 2_000_000  # Under 2M followers
-        and profile.get("userType") != "news"  # Not a news organization
+        profile.get("stats", {}).get("followerCount", 0) < 2_000_000
+        and profile.get("userType") != "news"
     )
 
 # Limit for displayed results
@@ -38,7 +47,7 @@ run_input = {
     "shouldDownloadCovers": False,
     "shouldDownloadSubtitles": False,
     "shouldDownloadSlideshowImages": False,
-    "proxyCountryCode": "None"
+    "proxyCountryCode": "US"
 }
 
 # Run the Actor and get the run ID
@@ -47,14 +56,11 @@ run = client.actor("OtzYfK1ndEGdwWFKQ").call(run_input=run_input)
 # Wait for the actor to finish processing
 while True:
     run_status = client.run(run["id"]).get()
-
     if run_status and "status" in run_status:
         status = run_status["status"]
         print(f"Actor Status: {status}")  # Print status updates
-
         if status in ["SUCCEEDED", "FAILED", "TIMED_OUT"]:
             break  # Exit when actor finishes
-
     time.sleep(5)  # Wait 5 seconds before checking again
 
 # Lists to store video URLs
