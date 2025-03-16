@@ -1,4 +1,4 @@
-rom apify_client import ApifyClient
+from apify_client import ApifyClient
 import time
 
 client = ApifyClient("apify_api")
@@ -6,21 +6,42 @@ client = ApifyClient("apify_api")
 # List of keywords to filter out news-related content
 NEWS_KEYWORDS = ["news", "breaking", "politics", "report", "update", "headline"]
 
+import requests
+
+# Define proxy settings
+PROXIES = {
+    "http": "http://apify_proxy_6Kb8fC7W3EhS91CbBkYCqOhJvATN2w3B20gi",
+    "https": "http://apify_proxy_6Kb8fC7W3EhS91CbBkYCqOhJvATN2w3B20gi"
+}
+
+# Define keywords for filtering
+NEWS_KEYWORDS = {"news", "breaking", "update", "politics", "report", "election"}
+
+def fetch_video_data(url):
+    """Fetch video data using a proxy."""
+    try:
+        response = requests.get(url, proxies=PROXIES, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"❌ ERROR: Failed to fetch video data -> {e}")
+        return None
+
 def is_valid_video(video):
     video_url = video.get("webVideoUrl", "No URL")
     duration = video.get("videoMeta", {}).get("duration", 0)
     music_name = video.get("musicMeta", {}).get("musicName", "Unknown")
     is_copyrighted = video.get("musicMeta", {}).get("isOriginal", True)
 
-    # Extracting view count from the top level
+    # Extracting view count
     view_count = video.get("playCount", 0)
     if view_count is None:
-        print(f"❌ ERROR: 'playCount' key missing for {video_url}! Defaulting to 0.")
+        print(f"❌ ERROR: 'playCount' missing for {video_url}! Defaulting to 0.")
         view_count = 0
     elif isinstance(view_count, str) and view_count.isdigit():
         view_count = int(view_count)
     elif not isinstance(view_count, int):
-        print(f"❌ ERROR: Unexpected data type for 'playCount' in {video_url}! Setting view_count to 0.")
+        print(f"❌ ERROR: Unexpected 'playCount' type in {video_url}! Setting to 0.")
         view_count = 0
 
     # Process text content safely
@@ -31,12 +52,11 @@ def is_valid_video(video):
     else:
         text_content = text_content.lower()
     
-    print(f"DEBUG: text_content value -> {text_content} (type: {type(text_content)})")
+    print(f"DEBUG: text_content value -> {text_content}")
 
     # Process hashtags safely
     raw_hashtags = video.get("hashtags", [])
     hashtags = []
-
     if isinstance(raw_hashtags, list):
         for tag in raw_hashtags:
             if isinstance(tag, dict) and "name" in tag:
@@ -46,7 +66,7 @@ def is_valid_video(video):
     else:
         print(f"❌ ERROR: hashtags is not a list for {video_url}!")
 
-    print(f"DEBUG: Cleaned hashtags -> {hashtags} (type: {type(hashtags)})")
+    print(f"DEBUG: Cleaned hashtags -> {hashtags}")
 
     # Print debug info
     print(f"\nChecking Video: {video_url}")
@@ -72,7 +92,7 @@ def is_valid_video(video):
     if not is_copyrighted:
         print("  ❌ Rejected: Contains copyrighted music.")
         return False
-    if isinstance(text_content, str) and any(keyword in text_content for keyword in NEWS_KEYWORDS):
+    if any(keyword in text_content for keyword in NEWS_KEYWORDS):
         print("  ❌ Rejected: Contains news-related text.")
         return False
     if any(tag in NEWS_KEYWORDS for tag in hashtags):
@@ -80,6 +100,7 @@ def is_valid_video(video):
         return False
 
     return True
+
 
 
 def is_valid_profile(profile):
