@@ -2,7 +2,7 @@ from apify_client import ApifyClient
 import time
 
 # Initialize the ApifyClient with your API token
-client = ApifyClient("apify_api_dvWeQGo0BOAJDS05l3Idr376atadX02xinZg")
+client = ApifyClient("apify_api")
 
 # Function to check if a video meets the required criteria
 def is_valid_video(video):
