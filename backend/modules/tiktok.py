@@ -1,7 +1,7 @@
 rom apify_client import ApifyClient
 import time
 
-client = ApifyClient("apify_api_7Na9Qlv8BaFyHzrkWXF25N1bY76hzj07Xpuv")
+client = ApifyClient("apify_api")
 
 # List of keywords to filter out news-related content
 NEWS_KEYWORDS = ["news", "breaking", "politics", "report", "update", "headline"]
