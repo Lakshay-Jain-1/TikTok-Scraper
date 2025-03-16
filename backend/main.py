@@ -1,4 +1,4 @@
-from modules.scrapper import extractVideoUrls
+from modules.scraper import extractVideoUrls
 from modules.downloader import batch_download
 from modules.merge import merging
 
