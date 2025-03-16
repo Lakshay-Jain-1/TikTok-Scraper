@@ -1,104 +1,159 @@
-from apify_client import ApifyClient
+rom apify_client import ApifyClient
 import time
 
-# Initialize the ApifyClient with your API token
-client = ApifyClient("apify_api")
+client = ApifyClient("apify_api_7Na9Qlv8BaFyHzrkWXF25N1bY76hzj07Xpuv")
 
-# Function to check if a video meets the required criteria
+# List of keywords to filter out news-related content
+NEWS_KEYWORDS = ["news", "breaking", "politics", "report", "update", "headline"]
+
 def is_valid_video(video):
-    print("\nChecking Video:", video.get("webVideoUrl", "No URL"))
-    print("Duration:", video.get("duration", "Unknown"))
-    print("Music Metadata:", video.get("musicMeta", {}).get("musicName"))
-    
-    # Debugging: Temporarily remove the music filter and increase duration limit
-    return (
-        video.get("duration", 0) <= 600  # Increased to 10 min for testing
-        # and video.get("musicMeta", {}).get("musicName") is None  # Temporarily disabled
-    )
+    video_url = video.get("webVideoUrl", "No URL")
+    duration = video.get("videoMeta", {}).get("duration", 0)
+    music_name = video.get("musicMeta", {}).get("musicName", "Unknown")
+    is_copyrighted = video.get("musicMeta", {}).get("isOriginal", True)
 
-# Function to check if a profile meets the criteria
+    # Extracting view count from the top level
+    view_count = video.get("playCount", 0)
+    if view_count is None:
+        print(f"❌ ERROR: 'playCount' key missing for {video_url}! Defaulting to 0.")
+        view_count = 0
+    elif isinstance(view_count, str) and view_count.isdigit():
+        view_count = int(view_count)
+    elif not isinstance(view_count, int):
+        print(f"❌ ERROR: Unexpected data type for 'playCount' in {video_url}! Setting view_count to 0.")
+        view_count = 0
+
+    # Process text content safely
+    text_content = video.get("text", "")
+    if not isinstance(text_content, str):
+        print(f"❌ ERROR: text_content for {video_url} is not a string!")
+        text_content = ""
+    else:
+        text_content = text_content.lower()
+    
+    print(f"DEBUG: text_content value -> {text_content} (type: {type(text_content)})")
+
+    # Process hashtags safely
+    raw_hashtags = video.get("hashtags", [])
+    hashtags = []
+
+    if isinstance(raw_hashtags, list):
+        for tag in raw_hashtags:
+            if isinstance(tag, dict) and "name" in tag:
+                hashtags.append(tag["name"].lower())
+            elif isinstance(tag, str):
+                hashtags.append(tag.lower())
+    else:
+        print(f"❌ ERROR: hashtags is not a list for {video_url}!")
+
+    print(f"DEBUG: Cleaned hashtags -> {hashtags} (type: {type(hashtags)})")
+
+    # Print debug info
+    print(f"\nChecking Video: {video_url}")
+    print(f"  Duration: {duration} sec")
+    print(f"  View Count: {view_count}")
+    print(f"  Music Name: {music_name}")
+    print(f"  Copyrighted Music: {'Yes' if is_copyrighted else 'No'}")
+    print(f"  Hashtags: {hashtags}")
+
+    # Filter conditions
+    if duration == 0:
+        print("  ❌ Rejected: No duration info.")
+        return False
+    if duration > 480:
+        print("  ❌ Rejected: Video is longer than 8 min.")
+        return False
+    if view_count == 0:
+        print("  ❌ Rejected: No views.")
+        return False
+    if view_count >= 2_000_000:
+        print("  ❌ Rejected: More than 2M views.")
+        return False
+    if not is_copyrighted:
+        print("  ❌ Rejected: Contains copyrighted music.")
+        return False
+    if isinstance(text_content, str) and any(keyword in text_content for keyword in NEWS_KEYWORDS):
+        print("  ❌ Rejected: Contains news-related text.")
+        return False
+    if any(tag in NEWS_KEYWORDS for tag in hashtags):
+        print("  ❌ Rejected: Has news-related hashtags.")
+        return False
+
+    return True
+
+
 def is_valid_profile(profile):
-    print("\nChecking Profile:", profile.get("username", "Unknown"))
-    print("Follower Count:", profile.get("stats", {}).get("followerCount", 0))
-    print("User Type:", profile.get("userType", "Unknown"))
+    user_type = profile.get("userType", "")
+
+    # Debugging print
+    print(f"DEBUG: userType value -> {user_type} (type: {type(user_type)})")
+
+    if isinstance(user_type, str):  # Ensure it's a string before calling lower()
+        return user_type.lower() != "news"
     
-    return (
-        profile.get("stats", {}).get("followerCount", 0) < 2_000_000
-        and profile.get("userType") != "news"
-    )
+    return True  # Default to valid if userType is missing or not a string
 
-# Limit for displayed results
-max_results = 10
-results_count = 0  # Counter for displayed results
 
-# Prepare the Actor input
+# Prepare API input
 run_input = {
     "hashtags": ["fyp"],
     "resultsPerPage": 5,
     "profileScrapeSections": ["videos"],
     "profileSorting": "latest",
     "excludePinnedPosts": False,
-    "searchQueries": [
-        "New innovations in solar and wind energy"
-    ],
+    "searchQueries": ["New innovations in AI technology"],
     "searchSection": "/video",
     "maxProfilesPerQuery": 5,
     "shouldDownloadVideos": False,
-    "shouldDownloadCovers": False,
-    "shouldDownloadSubtitles": False,
-    "shouldDownloadSlideshowImages": False,
     "proxyCountryCode": "US"
 }
 
-# Run the Actor and get the run ID
-run = client.actor("OtzYfK1ndEGdwWFKQ").call(run_input=run_input)
+# Run API
+try:
+    run = client.actor("OtzYfK1ndEGdwWFKQ").call(run_input=run_input)
+except Exception as e:
+    print("Error running actor:", str(e))
+    exit(1)
 
-# Wait for the actor to finish processing
+# Wait for completion
 while True:
-    run_status = client.run(run["id"]).get()
-    if run_status and "status" in run_status:
-        status = run_status["status"]
-        print(f"Actor Status: {status}")  # Print status updates
-        if status in ["SUCCEEDED", "FAILED", "TIMED_OUT"]:
-            break  # Exit when actor finishes
-    time.sleep(5)  # Wait 5 seconds before checking again
-
-# Lists to store video URLs
-all_video_urls = []      # Stores all returned URLs
-filtered_video_urls = [] # Stores only valid (filtered) URLs
-
-# Fetch and filter results
-for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-    # Extract the video URL
-    video_url = item.get("webVideoUrl", "")
-
-    # Store all video URLs before filtering
-    if video_url:
-        all_video_urls.append(video_url)
-
-    # Check if we have enough filtered results
-    if results_count >= max_results:
+    try:
+        run_status = client.run(run["id"]).get()
+        if run_status and "status" in run_status:
+            status = run_status["status"]
+            if status in ["SUCCEEDED", "FAILED", "TIMED_OUT"]:
+                break
+        time.sleep(5)
+    except Exception as e:
+        print("Error fetching actor status:", str(e))
         break
 
-    profile = item.get("authorMeta", {})
-    videos = [item]  # Since each item itself is a video
+# Process results
+filtered_video_urls = []
+results_count = 0
 
-    # Check if the profile is valid
-    if is_valid_profile(profile):
-        # Filter videos based on the criteria
-        filtered_videos = [video for video in videos if is_valid_video(video)]
+try:
+    for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        video_url = item.get("webVideoUrl", "")
 
-        # Collect the URLs of filtered videos
-        for video in filtered_videos:
-            filtered_video_urls.append(video.get("webVideoUrl"))
-            results_count += 1
+        profile = item.get("authorMeta", {})
+        videos = [item]
 
-# Display all video URLs
-print("\nAll Video URLs:")
-for url in all_video_urls:
-    print(url)
+        print("\n===== Scraped Video Found =====")
+        print(f"URL: {video_url}")
 
-# Display only filtered video URLs
-print("\nFiltered Video URLs (After Applying Criteria):")
-for url in filtered_video_urls:
-    print(url)
+        if is_valid_profile(profile):
+            filtered_videos = [video for video in videos if is_valid_video(video)]
+            for video in filtered_videos:
+                filtered_video_urls.append(video.get("webVideoUrl"))
+                results_count += 1
+except Exception as e:
+    print("Error processing dataset:", str(e))
+
+# Print filtered results
+if filtered_video_urls:
+    print("\n✅ Qualified Videos:")
+    for url in filtered_video_urls:
+        print(url)
+else:
+    print("\n⚠️ No videos matched the filter criteria.")
