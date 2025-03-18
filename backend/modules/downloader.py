@@ -62,12 +62,12 @@ def batch_download(video_urls):
     """Downloads multiple TikTok videos from a list of URLs."""
     for idx, video_url in enumerate(video_urls, start=1):
         ## For testing purposes
-        if idx==4:
-            console.print(
-                "To reduce the testing duration, only three videos will be downloaded",
-                style="bold white on blue" 
-            )
-            break
+        # if idx==4:
+        #     console.print(
+        #         "To reduce the testing duration, only three videos will be downloaded",
+        #         style="bold white on blue" 
+        #     )
+        #     break
         print(f"\n Processing Video {idx}/{len(video_urls)}: {video_url}")
         download_url = get_download_url(video_url)
         if download_url:
