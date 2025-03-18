@@ -175,7 +175,7 @@ def is_valid_profile(profile):
 #     rejection_reasons = []
 
 #     # Music filter
-#     if not (music_name == "false" or music_album in ["", "Storytelling"]):
+#     if not (music_name == "false" or music_album in ["Storytelling"]):
 #         rejection_reasons.append("Music not allowed")
 
 #     # Duration filter
