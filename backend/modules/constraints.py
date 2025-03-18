@@ -223,7 +223,7 @@ def is_valid_profile(profile):
 #     "profileScrapeSections": ["videos"],
 #     "profileSorting": "latest",
 #     "excludePinnedPosts": False,
-#     "searchQueries": ["Quantum computers"],
+#     "searchQueries": ["Joe Rogan podcas"],
 #     "searchSection": "/video",
 #     "maxProfilesPerQuery": 5,
 #     "shouldDownloadVideos": False,
