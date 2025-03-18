@@ -109,11 +109,10 @@ def is_valid_profile(profile):
 
 
 
-
 # from apify_client import ApifyClient
 # import time
 
-# client = ApifyClient("CONSTRAINTS_API_KEY")
+# client = ApifyClient("apify_api")
 
 # # List of keywords to filter out news-related content
 # NEWS_KEYWORDS = ["news", "breaking", "politics", "report", "update", "headline"]
@@ -142,7 +141,8 @@ def is_valid_profile(profile):
 # def is_valid_video(video):
 #     video_url = video.get("webVideoUrl", "No URL")
 #     duration = video.get("videoMeta", {}).get("duration", 0)
-#     music_name = video.get("musicMeta", {}).get("musicOriginal", "false")
+#     music_name = video.get("musicMeta", {}).get("musicName", "".startswith("original sound"))
+#     music_Original = video.get("musicMeta", {}).get("musicOriginal", "false")
 #     music_album = video.get("musicMeta", {}).get("musicAlbum", "")
 #     is_copyrighted = video.get("musicMeta", {}).get("isOriginal", True)
 
@@ -166,7 +166,7 @@ def is_valid_profile(profile):
 #     print(f"  URL: {video_url}")
 #     print(f"  Duration: {duration} sec")
 #     print(f"  View Count: {view_count}")
-#     print(f"  Music Name: {music_name}")
+#     print(f"  Music Name: {music_name, "\n", music_Original}")
 #     print(f"  Music Album: {music_album}")
 #     print(f"  Copyrighted Music: {'Yes' if is_copyrighted else 'No'}")
 #     print(f"  Hashtags: {hashtags}")
@@ -175,7 +175,7 @@ def is_valid_profile(profile):
 #     rejection_reasons = []
 
 #     # Music filter
-#     if not (music_name == "false" or music_album in ["Storytelling"]):
+#     if (music_Original == "false" or music_album in ["Storytelling"] or (music_name == "".startswith("original sound") and music_album in [""] and music_Original == "true")):
 #         rejection_reasons.append("Music not allowed")
 
 #     # Duration filter
@@ -219,14 +219,17 @@ def is_valid_profile(profile):
 # # Prepare API input
 # run_input = {
 #     "hashtags": ["fyp"],
-#     "resultsPerPage": 5,
+#     "resultsPerPage":5,
 #     "profileScrapeSections": ["videos"],
 #     "profileSorting": "latest",
 #     "excludePinnedPosts": False,
-#     "searchQueries": ["Joe Rogan podcas"],
+#     "searchQueries": ["religious debates and sermons"],
 #     "searchSection": "/video",
 #     "maxProfilesPerQuery": 5,
 #     "shouldDownloadVideos": False,
+#     "shouldDownloadCovers": False,
+#     "shouldDownloadSubtitles": False,
+#     "shouldDownloadSlideshowImages": False,
 #     "proxyCountryCode": "US"
 # }
 
@@ -279,5 +282,7 @@ def is_valid_profile(profile):
 #         print(url)
 # else:
 #     print("\n⚠️ No videos matched the filter criteria.")
+
+# #     print("\n⚠️ No videos matched the filter criteria.")
 
 
