@@ -32,11 +32,11 @@ def main(searchQueries, hashtags, max_results):
         print(f"Extracted {len(video_urls)} videos.")
         batch_download(video_urls)
 
-        # 3rd phase
-        merging()
-    else:
-        print("No videos found.")
-        raise Exception("No videos Found")
+    #     # 3rd phase
+    #     merging()
+    # else:
+    #     print("No videos found.")
+    #     raise Exception("No videos Found")
     
 
 if __name__ == "__main__":

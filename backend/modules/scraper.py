@@ -1,8 +1,7 @@
 import os
-import time
 from dotenv import load_dotenv
 from apify_client import ApifyClient
-from modules.constraints import is_valid_profile , is_valid_video
+from modules.constraints import  is_valid_video
 
 load_dotenv()
 
@@ -30,13 +29,13 @@ def extractVideoUrls(searchQueries=["Trump"], hashtags=["maga"], max_results=5):
     # Define search parameters
     run_input = {
         "hashtags": hashtags,
-        "resultsPerPage": 5,
+        "resultsPerPage": max_results,
         "profileScrapeSections": ["videos"],
         "profileSorting": "latest",
         "excludePinnedPosts": False,
         "searchQueries": searchQueries,
         "searchSection": "/video",
-        "maxProfilesPerQuery": max_results,
+        "maxProfilesPerQuery": 5,
         "shouldDownloadVideos": False,
         "proxyCountryCode": "US"
     }
@@ -48,45 +47,24 @@ def extractVideoUrls(searchQueries=["Trump"], hashtags=["maga"], max_results=5):
         print("Error running actor:", str(e))
         exit(1)
 
-    # Wait for completion
-    while True:
-        try:
-            run_status = client.run(run["id"]).get()
-            if run_status and "status" in run_status:
-                status = run_status["status"]
-                if status in ["SUCCEEDED", "FAILED", "TIMED_OUT"]:
-                    break
-            time.sleep(5)
-        except Exception as e:
-            print("Error fetching actor status:", str(e))
-            break
+    object={}
+    for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        object[item.get("webVideoUrl")]= {
+            'musicId':item["musicMeta"]["musicId"],
+            'duration':item["videoMeta"]["duration"], # it is in seconds
+            'hashtags':[ x["name"] for x in item["hashtags"]],
+            'views':item["playCount"],
+            "metadata":item
+            }
+            
+        
+    validUrls=[]
+    for videoUrl in object:
+        if is_valid_video(videoUrl,object[videoUrl]):
+            validUrls.append(videoUrl)
+    
+    return validUrls
 
-    # Process results
-    filtered_video_urls = []
-    results_count = 0
-
-    try:
-        for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-            video_url = item.get("webVideoUrl", "")
-
-            profile = item.get("authorMeta", {})
-            videos = [item]
-
-            print("\n===== Scraped Video Found =====")
-            print(f"URL: {video_url}")
-
-            if is_valid_profile(profile):
-                filtered_videos = [video for video in videos if is_valid_video(video)]
-                for video in filtered_videos:
-                    filtered_video_urls.append(video.get("webVideoUrl"))
-                    results_count += 1
-    except Exception as e:
-        print("Error processing dataset:", str(e))
-
-    # Print filtered results
-    if filtered_video_urls:
-        print("\n✅ Qualified Videos:")
-        return filtered_video_urls
 
 if __name__ == "__main__":
     test_queries = ["AI technology", "future of robotics"]

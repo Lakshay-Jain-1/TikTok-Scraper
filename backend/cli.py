@@ -10,7 +10,7 @@ hashtags = questionary.text(
 ).ask()
 
 max_results = questionary.text(
-    "Please enter the maximum number of results you want (choose a number up to 10):"
+    "Please enter the maximum number of results you want (choose a number):"
 ).ask()
 
 main.main(searchQueries.split(","), hashtags.split(","), int(max_results))
