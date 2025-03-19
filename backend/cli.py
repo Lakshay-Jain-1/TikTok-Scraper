@@ -2,12 +2,13 @@ import questionary
 import main
 
 searchQueries = questionary.text(
-    "Please enter your search query (you may enter multiple keywords separated by commas):"
+    "Enter your search queries in the format: query1,query2,query3:"
 ).ask()
 
 hashtags = questionary.text(
-    "Please enter the hashtags you would like to use (separate multiple hashtags with commas):"
+    "Enter the hashtags  in the format: hashtag1,hashtag2,hashtag3:"
 ).ask()
+
 
 # max_results = questionary.text(
 #     "Please enter the maximum number of results you want (choose a number):"
