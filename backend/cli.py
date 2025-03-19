@@ -9,8 +9,8 @@ hashtags = questionary.text(
     "Please enter the hashtags you would like to use (separate multiple hashtags with commas):"
 ).ask()
 
-max_results = questionary.text(
-    "Please enter the maximum number of results you want (choose a number):"
-).ask()
+# max_results = questionary.text(
+#     "Please enter the maximum number of results you want (choose a number):"
+# ).ask()
 
-main.main(searchQueries.split(","), hashtags.split(","), int(max_results))
+main.main(searchQueries.split(","), hashtags.split(","), 15)
