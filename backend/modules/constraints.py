@@ -26,27 +26,24 @@ def is_valid_video(videoUrl,metadata):
 
     return True
 
-def music_check_copyright(musicID):
-    root = "https://ensembledata.com/apis"
-    endpoint = "/tt/music/details"
-    params = {
-        "id": musicID,
-        "token": "Gd2XrYWM8DdCnHl2"
+def music_check_copyright(music_id):
+    url = "https://shazam.p.rapidapi.com/songs/get-details"
+    headers = {
+        "X-RapidAPI-Key": "b3cc9a3551msh65998eb88f26cbap163c0cjsnff9c7ca2d8ba",
+        "X-RapidAPI-Host": "shazam.p.rapidapi.com"
     }
-    
-    try:
-        res = requests.get(root + endpoint, params=params)
-        res.raise_for_status()  # Raise an exception for HTTP errors
-        data = res.json().get("data", {})
-        # Return True if commercial_right_type equals 2, else False
-        return data.get("commercial_right_type") == 2
-    except requests.RequestException as e:
-        print("Request failed:", e)
-        return False
-    except ValueError as e:
-        print("Invalid JSON:", e)
-        return False
 
+    try:
+        response = requests.get(
+            url, 
+            headers=headers,
+            params={"id": music_id, "locale": "en-US"}
+        )
+        data = response.json()
+        return data.get('share', {}).get('snapchat', '') == 'available'
+    except:
+        return False
+    
 def is_news_video(metadata):
     # Check if any hashtag is in NEWS_KEYWORDS
     for hashtag in metadata.get("hashtags", []):
