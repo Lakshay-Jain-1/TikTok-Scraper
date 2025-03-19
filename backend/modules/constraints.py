@@ -31,7 +31,7 @@ def music_check_copyright(musicID):
     endpoint = "/tt/music/details"
     params = {
         "id": musicID,
-        "token": "vchHlG3DctoKgfPW"
+        "token": "Gd2XrYWM8DdCnHl2"
     }
     
     try:
