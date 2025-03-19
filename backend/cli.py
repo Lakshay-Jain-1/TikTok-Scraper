@@ -1,5 +1,8 @@
 import questionary
 import main
+from modules.downloader import setup_vlc
+
+setup_vlc()
 
 searchQueries = questionary.text(
     "Enter your search queries in the format: query1,query2,query3:"

@@ -3,11 +3,10 @@ import requests
 from tqdm import tqdm
 from rich.console import Console
 import cv2
-import vlc
 import time
 import threading
 import tkinter as tk
-
+import platform
 console = Console()
 
 # RapidAPI credentials and endpoint
@@ -64,84 +63,139 @@ def download_tiktok_video(download_url, filename):
     except requests.exceptions.RequestException as e:
         print(f"Error downloading video: {e}")
 
+def setup_vlc():
+    """Automatically install VLC and configure environment if missing"""
+    try:
+        # Try to import VLC to check if it's available
+        import vlc
+        return True
+    except (ImportError, OSError):
+        print("VLC not found. Starting automatic installation...")
+        
+        # Install python-vlc package
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "python-vlc"])
+        
+        # Platform-specific installation
+        system = platform.system()
+        if system == "Windows":
+            vlc_install_path = r"C:\Program Files\VideoLAN\VLC"
+            installer_url = "https://get.videolan.org/vlc/3.0.20/win64/vlc-3.0.20-win64.exe"
+            
+            # Download VLC installer
+            print("Downloading VLC...")
+            response = requests.get(installer_url, stream=True)
+            with open("vlc_installer.exe", "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
+            # Silent install
+            print("Installing VLC...")
+            subprocess.run(
+                ["vlc_installer.exe", "/L=1033", "/S"],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            os.remove("vlc_installer.exe")
+            
+            # Add to DLL path
+            os.environ['PATH'] += os.pathsep + vlc_install_path
+            os.add_dll_directory(vlc_install_path)
+            
+        elif system == "Darwin":  # macOS
+            subprocess.run(
+                ["brew", "install", "vlc"],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+        else:  # Linux
+            subprocess.run(
+                ["sudo", "apt-get", "install", "-y", "vlc"],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+        
+        print("VLC installation completed successfully!")
+        return True
+    except Exception as e:
+        print(f"Automatic installation failed: {e}")
+        return False
+
+
+# Now safely import VLC
+import vlc
+import time
+
 def play_video_and_get_feedback(filepath):
-    """
-    Plays the downloaded video using VLC for preview (with sound) inside a small Tkinter window.
-    Uses a separate thread to wait for the Enter key to stop playback efficiently.
-    """
+    """VLC video player implementation with automatic setup"""
     root = tk.Tk()
     root.title("Video Preview")
     root.geometry("400x300+100+100")
 
     video_frame = tk.Frame(root, bg="black")
-    video_frame.pack(fill=tk.BOTH, expand=1)
+    video_frame.pack(fill=tk.BOTH, expand=True)
 
-    # Initialize VLC with hardware acceleration and performance options
+    # Configure VLC with platform-specific optimizations
     vlc_options = [
-        '--vout=wingdi',
         '--quiet',
-        '--verbose=0',
+        '--no-osd',
         '--avcodec-hw=any',
-        '--no-osd'    ]
+        '--drop-late-frames',
+        '--skip-frames'
+    ]
+
     instance = vlc.Instance(*vlc_options)
     player = instance.media_player_new()
     media = instance.media_new(filepath)
     player.set_media(media)
 
-    win_id = video_frame.winfo_id()
-    player.set_hwnd(win_id)
+    # Windows-specific window handling
+    if platform.system() == "Windows":
+        win_id = video_frame.winfo_id()
+        player.set_hwnd(win_id)
+    else:  # Linux/macOS
+        player.set_xwindow(video_frame.winfo_id())
 
     player.play()
 
-    # Wait for playback to start with timeout
-    start_time = time.time()
-    timeout = 5  # seconds
-    while player.get_state() not in [vlc.State.Playing, vlc.State.Opening]:
-        time.sleep(0.1)
-        if time.time() - start_time > timeout:
-            print("Warning: Playback start timeout. Video may not play correctly.")
-            break
-
-    print("Playing video preview with sound in a small window.")
-    print("Press Enter in the terminal to stop playback and evaluate the video.")
-
+    # Playback monitoring
     stop_event = threading.Event()
 
+    def check_playback():
+        if stop_event.is_set() or player.get_state() == vlc.State.Ended:
+            root.quit()
+        else:
+            root.after(100, check_playback)
+
+    print("Press Enter in terminal to stop playback...")
+    
+    # Input handling thread
     def wait_for_enter():
-        input()  # Simplified prompt to reduce delay
+        input()
         player.stop()
         stop_event.set()
 
-    stop_thread = threading.Thread(target=wait_for_enter, daemon=True)
-    stop_thread.start()
-
-    # Periodically check stop event in main thread
-    def check_stop():
-        if stop_event.is_set():
-            root.quit()
-        else:
-            root.after(50, check_stop)  # Check every 50ms for responsiveness
-
-    root.after(50, check_stop)
+    threading.Thread(target=wait_for_enter, daemon=True).start()
+    root.after(100, check_playback)
     root.mainloop()
 
-    # Cleanup resources
-    player.stop()
+    # Cleanup
     player.release()
-    del player
-    del instance
     root.destroy()
 
-    # Get user feedback
-    choice = input("Do you accept the video? (y/n): ")
-    if choice.lower() == 'y':
+    # User feedback
+    choice = input("Accept video? (y/n): ").lower()
+    if choice == 'y':
         print("Video accepted.")
     else:
         try:
             os.remove(filepath)
-            print("Video rejected and file deleted.")
+            print("Video deleted.")
         except Exception as e:
-            print(f"Error deleting video file: {e}")
+            print(f"Deletion error: {e}")
+
 
 def batch_download(video_urls):
     """Downloads multiple TikTok videos from a list of URLs."""
