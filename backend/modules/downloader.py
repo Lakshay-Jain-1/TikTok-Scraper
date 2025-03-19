@@ -2,6 +2,11 @@ import os
 import requests
 from tqdm import tqdm
 from rich.console import Console
+import cv2
+import vlc
+import time
+import threading
+import tkinter as tk
 
 console = Console()
 
@@ -55,8 +60,88 @@ def download_tiktok_video(download_url, filename):
                 bar.update(len(chunk))
         
         print(f"Download complete: {filepath}")
+        play_video_and_get_feedback(filepath)
     except requests.exceptions.RequestException as e:
         print(f"Error downloading video: {e}")
+
+def play_video_and_get_feedback(filepath):
+    """
+    Plays the downloaded video using VLC for preview (with sound) inside a small Tkinter window.
+    Uses a separate thread to wait for the Enter key to stop playback efficiently.
+    """
+    root = tk.Tk()
+    root.title("Video Preview")
+    root.geometry("400x300+100+100")
+
+    video_frame = tk.Frame(root, bg="black")
+    video_frame.pack(fill=tk.BOTH, expand=1)
+
+    # Initialize VLC with hardware acceleration and performance options
+    vlc_options = [
+        '--vout=wingdi',
+        '--quiet',
+        '--verbose=0',
+        '--avcodec-hw=any',
+        '--no-osd'    ]
+    instance = vlc.Instance(*vlc_options)
+    player = instance.media_player_new()
+    media = instance.media_new(filepath)
+    player.set_media(media)
+
+    win_id = video_frame.winfo_id()
+    player.set_hwnd(win_id)
+
+    player.play()
+
+    # Wait for playback to start with timeout
+    start_time = time.time()
+    timeout = 5  # seconds
+    while player.get_state() not in [vlc.State.Playing, vlc.State.Opening]:
+        time.sleep(0.1)
+        if time.time() - start_time > timeout:
+            print("Warning: Playback start timeout. Video may not play correctly.")
+            break
+
+    print("Playing video preview with sound in a small window.")
+    print("Press Enter in the terminal to stop playback and evaluate the video.")
+
+    stop_event = threading.Event()
+
+    def wait_for_enter():
+        input()  # Simplified prompt to reduce delay
+        player.stop()
+        stop_event.set()
+
+    stop_thread = threading.Thread(target=wait_for_enter, daemon=True)
+    stop_thread.start()
+
+    # Periodically check stop event in main thread
+    def check_stop():
+        if stop_event.is_set():
+            root.quit()
+        else:
+            root.after(50, check_stop)  # Check every 50ms for responsiveness
+
+    root.after(50, check_stop)
+    root.mainloop()
+
+    # Cleanup resources
+    player.stop()
+    player.release()
+    del player
+    del instance
+    root.destroy()
+
+    # Get user feedback
+    choice = input("Do you accept the video? (y/n): ")
+    if choice.lower() == 'y':
+        print("Video accepted.")
+    else:
+        try:
+            os.remove(filepath)
+            print("Video rejected and file deleted.")
+        except Exception as e:
+            print(f"Error deleting video file: {e}")
 
 def batch_download(video_urls):
     """Downloads multiple TikTok videos from a list of URLs."""

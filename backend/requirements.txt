@@ -12,3 +12,5 @@ moviepy
 tqdm 
 rich
 questionary
+opencv-python
+python-vlc
