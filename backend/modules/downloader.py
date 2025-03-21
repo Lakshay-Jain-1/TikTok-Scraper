@@ -2,11 +2,11 @@ import os
 import requests
 from tqdm import tqdm
 from rich.console import Console
-import cv2
-import time
 import threading
 import tkinter as tk
 import platform
+import vlc
+
 console = Console()
 
 # RapidAPI credentials and endpoint
@@ -62,71 +62,6 @@ def download_tiktok_video(download_url, filename):
         play_video_and_get_feedback(filepath)
     except requests.exceptions.RequestException as e:
         print(f"Error downloading video: {e}")
-
-def setup_vlc():
-    """Automatically install VLC and configure environment if missing"""
-    try:
-        # Try to import VLC to check if it's available
-        import vlc
-        return True
-    except (ImportError, OSError):
-        print("VLC not found. Starting automatic installation...")
-        
-        # Install python-vlc package
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "python-vlc"])
-        
-        # Platform-specific installation
-        system = platform.system()
-        if system == "Windows":
-            vlc_install_path = r"C:\Program Files\VideoLAN\VLC"
-            installer_url = "https://get.videolan.org/vlc/3.0.20/win64/vlc-3.0.20-win64.exe"
-            
-            # Download VLC installer
-            print("Downloading VLC...")
-            response = requests.get(installer_url, stream=True)
-            with open("vlc_installer.exe", "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            
-            # Silent install
-            print("Installing VLC...")
-            subprocess.run(
-                ["vlc_installer.exe", "/L=1033", "/S"],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            os.remove("vlc_installer.exe")
-            
-            # Add to DLL path
-            os.environ['PATH'] += os.pathsep + vlc_install_path
-            os.add_dll_directory(vlc_install_path)
-            
-        elif system == "Darwin":  # macOS
-            subprocess.run(
-                ["brew", "install", "vlc"],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-        else:  # Linux
-            subprocess.run(
-                ["sudo", "apt-get", "install", "-y", "vlc"],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-        
-        print("VLC installation completed successfully!")
-        return True
-    except Exception as e:
-        print(f"Automatic installation failed: {e}")
-        return False
-
-
-# Now safely import VLC
-import vlc
-import time
 
 def play_video_and_get_feedback(filepath):
     """VLC video player implementation with automatic setup"""
@@ -195,7 +130,6 @@ def play_video_and_get_feedback(filepath):
             print("Video deleted.")
         except Exception as e:
             print(f"Deletion error: {e}")
-
 
 def batch_download(video_urls):
     """Downloads multiple TikTok videos from a list of URLs."""

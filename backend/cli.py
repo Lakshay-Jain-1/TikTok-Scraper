@@ -1,6 +1,5 @@
 import questionary
-import main
-from modules.downloader import setup_vlc
+from modules.setup import setup_vlc
 
 setup_vlc()
 
@@ -12,7 +11,7 @@ hashtags = questionary.text(
     "Enter the hashtags  in the format: hashtag1,hashtag2,hashtag3:"
 ).ask()
 
-
+import main
 # max_results = questionary.text(
 #     "Please enter the maximum number of results you want (choose a number):"
 # ).ask()
