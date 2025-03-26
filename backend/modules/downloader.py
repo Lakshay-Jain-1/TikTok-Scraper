@@ -6,13 +6,17 @@ import threading
 import tkinter as tk
 import platform
 import vlc
+from dotenv import load_dotenv
+
+load_dotenv()
 
 console = Console()
+API_TOKEN = os.getenv('DOWNLOAD_TIKTOK_API_TOKEN')
 
 # RapidAPI credentials and endpoint
 API_URL = "https://tiktok-video-downloader-api.p.rapidapi.com/media"
 HEADERS = {
-    "x-rapidapi-key": "b3cc9a3551msh65998eb88f26cbap163c0cjsnff9c7ca2d8ba",
+    "x-rapidapi-key": str(API_TOKEN),
     "x-rapidapi-host": "tiktok-video-downloader-api.p.rapidapi.com"
 }
 
