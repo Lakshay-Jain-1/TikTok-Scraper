@@ -1,8 +1,8 @@
 import questionary
 
-# Initial setting states
+# Initial setting states with "Max View Count" enabled by default
 settings_status = {
-    "Max View Count": "Disabled",
+    "Max View Count": "Enabled",
     "Max Follower Count": "Enabled"
 }
 
@@ -27,24 +27,28 @@ def main():
             break
 
         elif "Max View Count" in selected_setting:
-            configure_setting("Max View Count")
+            configure_view_count()
         
         elif "Max Follower Count" in selected_setting:
             configure_follower_count()
 
 
-def configure_setting(setting_name):
-    """Toggle basic enable/disable settings."""
-    status = questionary.select(
-        f"Do you want to enable or disable {setting_name}?",
-        choices=["Enable", "Disable", "Back"]
-    ).ask()
+def configure_view_count():
+    """Configure view count with '1' to enable and '0' to disable."""
+    count = questionary.text(
+        "Enter '1' to enable or '0' to disable the maximum view count:",
+        default="",  # Avoid concatenating extra text into the input
+        qmark="⚙"
+    ).ask().strip()  # Strip unnecessary whitespace
 
-    if status in ["Enable", "Disable"]:
-        settings_status[setting_name] = status
-        print(f"{setting_name} has been set to {status.lower()}.")
+    if count == "0":
+        settings_status["Max View Count"] = "Disabled"
+        print("Max View Count has been disabled.")
+    elif count == "1":
+        settings_status["Max View Count"] = "Enabled"
+        print("Max View Count has been enabled.")
     else:
-        print("Returning to main menu...")
+        print("Invalid input. Please enter '1' to enable or '0' to disable.")
 
 
 def configure_follower_count():
@@ -81,10 +85,10 @@ def toggle_follower_count():
     else:
         print("Returning to previous menu...")
 
-
+        
 def set_follower_count(count_type):
-    count = questionary.text(f"Enter the {count_type} follower count (e.g., '2 million', '500k'):")
-    parsed_count = parse_number(count.ask())
+    count = questionary.text(f"Enter the {count_type} follower count (e.g., '2 million', '500k'):").ask()
+    parsed_count = parse_number(count)
 
     if parsed_count is not None:
         print(f"The {count_type} follower count has been set to {parsed_count}.")
