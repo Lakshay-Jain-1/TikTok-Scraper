@@ -51,12 +51,12 @@ def extractVideoUrls(searchQueries=["Trump"], hashtags=["maga"], max_results=5):
     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
         object[item.get("webVideoUrl")]= {
             'musicId':item["musicMeta"]["musicId"],
-            'duration':item["videoMeta"]["duration"], # it is in seconds
+            'duration':item["videoMeta"]["duration"], 
+            'followers':item["authorMeta"]["fans"],
             'hashtags':[ x["name"] for x in item["hashtags"]],
             'views':item["playCount"],
             "metadata":item
             }
-            
         
     validUrls=[]
     for videoUrl in object:

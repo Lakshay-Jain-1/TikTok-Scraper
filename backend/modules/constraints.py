@@ -1,14 +1,27 @@
 import requests
+import json
+import os
+
+global data
+with open(f"{os.getcwd()}/modules/app_settings.json", 'r') as file:
+    data = json.load(file)
+
 
 NEWS_KEYWORDS = ["news", "breaking", "politics", "report", "update", "headline","c4news","Channel 4 News"]
 
 def is_valid_video(videoUrl,metadata):
     # Check view Count
-    if int(metadata["views"])>2000000:
-        print(metadata["views"])
-        print("Got rejected as view count was more than 2 million")
-        return False
+    if (data["max_view"] !=0 and data["min_view"] !=0 ) :
+        if int(metadata["views"])>data["max_view"] or data["min_view"]>int(metadata["views"]):
+            print(f"Rejected due to view count: {metadata['views']}. Max allowed: {data['max_view']}, Min required: {data['min_view']}.")
+            return False
     
+    # check follower Count
+    if (data["max_follower"] !=0 and data["min_follower"] !=0 ):  
+        if int(metadata["followers"])>data["max_follower"] or data["min_follower"]>int(metadata["followers"]):
+            print(f"Rejected due to follower count: {metadata['followers']}. Max allowed: {data['max_follower']}, Min required: {data['min_follower']}.")
+            return False
+
     # Check music (Is it copyright or not ?)
     if  music_check_copyright(metadata["musicId"]):     
         return False
