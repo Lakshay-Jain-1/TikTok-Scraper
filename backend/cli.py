@@ -1,6 +1,8 @@
 import questionary
 from modules.setup import setup_vlc
+from modules.settings import settings_menu
 
+settings_menu()
 setup_vlc()
 
 searchQueries = questionary.text(
@@ -16,4 +18,4 @@ import main
 #     "Please enter the maximum number of results you want (choose a number):"
 # ).ask()
 
-main.main(searchQueries.split(","), hashtags.split(","), 21)
+main.main(searchQueries.split(","), hashtags.split(","), 30)
