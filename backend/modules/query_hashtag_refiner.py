@@ -22,17 +22,21 @@ def refine_query_and_hashtags(queries, hashtags):
     model = genai.GenerativeModel("gemini-2.0-flash")
 
     prompt = f"""
-    Enhance the following search queries and hashtags for better SEO and relevancy.
-    Fix any typos and suggest better alternatives.
+    Refine the following search queries and hashtags to improve SEO and ensure they capture unfiltered opinions, rants, and personal viewpoints from people speaking in front of the camera.
 
-    Queries: {queries}
-    Hashtags: {hashtags}
+        Fix any typos and suggest better alternatives.
+        Ensure queries focus on raw, unedited opinions, personal takes, and emotional rants.
+        Suggest hashtags that are trending, engaging, and commonly used in opinion-based videos.
 
-    Respond in JSON format:
-    {{
-      "refined_queries": list[str],
-      "refined_hashtags": list[str]
-    }}
+        Queries: {queries}
+        Hashtags: {hashtags}
+
+        Respond in JSON format:
+        {{
+        "refined_queries": list[str],
+        "refined_hashtags": list[str]
+        }}
+        
     """
 
     response = model.generate_content(prompt)
