@@ -139,23 +139,25 @@
 
 
 
+
+
+
 import requests
+import json
 
 def refine_query_and_hashtags(api_key):
     """
-    Refines the user's manually entered search query and hashtags, optionally using Gemini AI.
-    
+    Refines the user's search query and hashtags using Gemini AI if selected.
     Parameters:
     - api_key (str): API key for accessing Gemini AI.
-    
     Returns:
     - dict: Refined search query and optimized hashtags (or original if no refinement).
     """
     
-    # Prompt the user to enter a search query and hashtags
+    # User input for query and hashtags
     user_query = input("Enter your search query: ").strip()
     hashtags = input("Enter hashtags (comma-separated): ").strip().split(",")
-    hashtags = [tag.strip().strip("'").strip('"') for tag in hashtags]  # Remove leading/trailing spaces and quotes
+    hashtags = [tag.strip() for tag in hashtags]  # Clean hashtags
     
     print("\nOriginal Query:", user_query)
     print("Original Hashtags:", hashtags)
@@ -164,13 +166,45 @@ def refine_query_and_hashtags(api_key):
     use_gemini = input("\nDo you want to use Gemini AI for refining the query and hashtags? (yes/no): ").strip().lower()
     
     if use_gemini == "yes":
-        # Simulate refined prompt for Gemini AI API usage
-        ai_prompt = f"Refine the following search query and hashtags for better SEO, user engagement, and trending relevance.\nQuery: {user_query}\nHashtags: {hashtags}"
-        print("\nSending the following prompt to Gemini AI:\n", ai_prompt)
-        # Simulated API call to Gemini AI
-        print("\n[Simulating Gemini AI response...]")
-        refined_query = f"Explore {user_query} - Latest Insights & Reviews"
-        optimized_hashtags = [f"{tag.lower()}trend" if len(tag) > 3 else f"{tag.lower()}buzz" for tag in hashtags]
+        try:
+            # Define the prompt and request payload
+            ai_prompt = f"Refine the following search query and hashtags for better SEO, user engagement, and trending relevance.\nQuery: {user_query}\nHashtags: {hashtags}"
+            print("\nSending the following prompt to Gemini AI:\n", ai_prompt)
+            
+            request_data = {
+                "contents": [{"parts": [{"text": ai_prompt}]}]
+            }
+            
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+            
+            # Correct Gemini API Endpoint (Use Google AI API)
+            response = requests.post(
+                f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={api_key}",
+                headers=headers,
+                json=request_data
+            )
+            
+            # Handle the API response
+            if response.status_code == 200:
+                ai_response = response.json()
+                print("\nGemini AI Response:", json.dumps(ai_response, indent=2))  # Debugging output
+
+                # Extracting refined query and hashtags from AI response
+                refined_query = ai_response.get("candidates", [{}])[0].get("content", user_query)
+                optimized_hashtags = [tag.lower().replace("#", "") for tag in hashtags]
+            else:
+                print(f"API Error: Status Code {response.status_code} - {response.text}")
+                refined_query = user_query
+                optimized_hashtags = hashtags
+        
+        except Exception as e:
+            print(f"Error calling Gemini AI API: {e}")
+            refined_query = user_query
+            optimized_hashtags = hashtags
+    
     else:
         # No refinement - Keep the original query and hashtags
         refined_query = user_query
@@ -182,8 +216,9 @@ def refine_query_and_hashtags(api_key):
 
     return {"refined_query": refined_query, "optimized_hashtags": optimized_hashtags}
 
-# API Key (simulated usage)
-api_key = "AIzaSyAa1DVXYCB-HVSVW2VIY07QKh1yzANayxk"
 
-# Run the function to refine the user-provided query and hashtags
+# Replace with a valid Gemini API key
+api_key = "AIzaSyBaANl7m1QamNyJZZHUUKbulV-y45z6ohk"
+
+# Run the function
 refined_data = refine_query_and_hashtags(api_key)
