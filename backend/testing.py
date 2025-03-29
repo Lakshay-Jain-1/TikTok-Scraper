@@ -141,6 +141,74 @@
 
 
 
+# import requests
+# import json
+
+# GEMINI_API_KEY = 'AIzaSyBaANl7m1QamNyJZZHUUKbulV-y45z6ohk'
+
+# def refine_query_and_hashtags(query, hashtags, use_gemini):
+#     if not use_gemini.lower() == "yes":
+#         return query, hashtags  # Return input if not using Gemini AI
+    
+#     headers = {
+#         'Content-Type': 'application/json',
+#     }
+#     data = {
+#         "contents": [{
+#             "parts": [{"text": f"Refine the following search query and hashtags for better SEO, user engagement, and trending relevance. Only provide the refined query and hashtags without additional explanation.\nQuery: {query}\nHashtags: {hashtags}"}]
+#         }]
+#     }
+#     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    
+#     response = requests.post(url, headers=headers, data=json.dumps(data))
+    
+#     if response.status_code == 200:
+#         response_data = response.json()
+#         refined_response = response_data["candidates"][0]["content"]["parts"][0]["text"]
+
+#         # Extract refined query and hashtags
+#         refined_query = query
+#         refined_hashtags = hashtags
+        
+#         if "Query:" in refined_response and "Hashtags:" in refined_response:
+#             parts = refined_response.split("Hashtags:")
+#             refined_query = parts[0].split("Query:")[1].strip()
+#             refined_hashtags = parts[1].strip()
+
+#         # Clean the refined query and hashtags
+#         refined_query = refined_query.strip().replace("**", "").strip()  # Remove any unwanted symbols from query
+
+#         if isinstance(refined_hashtags, str):
+#             refined_hashtags_list = [hashtag.strip("#").strip() for hashtag in refined_hashtags.split()]
+
+#             # Remove unwanted symbols like '[' or ']' from hashtags
+#             refined_hashtags_list = [hashtag.replace('[','').replace(']','').replace('**','') for hashtag in refined_hashtags_list]
+#         else:
+#             refined_hashtags_list = [hashtag.strip("#").strip() for hashtag in refined_hashtags]
+
+#         return refined_query.strip(), refined_hashtags_list
+#     else:
+#         return f"API Error: Status Code {response.status_code} - {response.text}"
+
+# # User input for query and Gemini AI usage
+# query = input("Enter your search query: ")
+# hashtags_input = input("Enter your search hashtags (comma separated): ")
+# hashtags = hashtags_input.split(", ")
+
+# use_gemini = input("Do you want to use Gemini AI for refining the query and hashtags? (yes/no): ")
+
+# # Get the refined query and hashtags
+# refined_query, refined_hashtags = refine_query_and_hashtags(query, hashtags, use_gemini)
+
+# # Output final results
+# print("\nRefined Query:")
+# print(refined_query)
+# print("\nOptimized Hashtags:")
+# print(refined_hashtags)
+
+
+
+
 import requests
 import json
 
@@ -175,12 +243,14 @@ def refine_query_and_hashtags(query, hashtags, use_gemini):
             refined_query = parts[0].split("Query:")[1].strip()
             refined_hashtags = parts[1].strip()
 
-        # Ensure refined_hashtags is a string and clean the hashtags
+        # Clean the refined query and hashtags
+        refined_query = refined_query.strip().replace("**", "").strip()  # Remove any unwanted symbols from query
+
         if isinstance(refined_hashtags, str):
             refined_hashtags_list = [hashtag.strip("#").strip() for hashtag in refined_hashtags.split()]
 
-            # Removing any unwanted characters like '[' or ']' if present
-            refined_hashtags_list = [hashtag.replace('[','').replace(']','') for hashtag in refined_hashtags_list]
+            # Remove unwanted symbols like '[' or ']' from hashtags
+            refined_hashtags_list = [hashtag.replace('[','').replace(']','').replace("'", "").replace(",", "") for hashtag in refined_hashtags_list]
         else:
             refined_hashtags_list = [hashtag.strip("#").strip() for hashtag in refined_hashtags]
 
