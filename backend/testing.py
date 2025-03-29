@@ -142,83 +142,266 @@
 
 
 
+# import requests
+# import json
+
+# def refine_query_and_hashtags(api_key):
+#     """
+#     Refines the user's search query and hashtags using Gemini AI if selected.
+#     Parameters:
+#     - api_key (str): API key for accessing Gemini AI.
+#     Returns:
+#     - dict: Refined search query and optimized hashtags (or original if no refinement).
+#     """
+    
+#     # User input for query and hashtags
+#     user_query = input("Enter your search query: ").strip()
+#     hashtags = input("Enter hashtags (comma-separated): ").strip().split(",")
+#     hashtags = [tag.strip() for tag in hashtags]  # Clean hashtags
+    
+#     print("\nOriginal Query:", user_query)
+#     print("Original Hashtags:", hashtags)
+    
+#     # Ask whether to use Gemini AI for refinement
+#     use_gemini = input("\nDo you want to use Gemini AI for refining the query and hashtags? (yes/no): ").strip().lower()
+    
+#     if use_gemini == "yes":
+#         try:
+#             # Define the prompt and request payload
+#             ai_prompt = f"Refine the following search query and hashtags for better SEO, user engagement, and trending relevance.\nQuery: {user_query}\nHashtags: {hashtags}"
+#             print("\nSending the following prompt to Gemini AI:\n", ai_prompt)
+            
+#             request_data = {
+#                 "contents": [{"parts": [{"text": ai_prompt}]}]
+#             }
+            
+#             headers = {
+#                 "Authorization": f"Bearer {api_key}",
+#                 "Content-Type": "application/json",
+#             }
+            
+#             # Correct Gemini API Endpoint (Use Google AI API)
+#             response = requests.post(
+#                 f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={api_key}",
+#                 headers=headers,
+#                 json=request_data
+#             )
+            
+#             # Handle the API response
+#             if response.status_code == 200:
+#                 ai_response = response.json()
+#                 print("\nGemini AI Response:", json.dumps(ai_response, indent=2))  # Debugging output
+
+#                 # Extracting refined query and hashtags from AI response
+#                 refined_query = ai_response.get("candidates", [{}])[0].get("content", user_query)
+#                 optimized_hashtags = [tag.lower().replace("#", "") for tag in hashtags]
+#             else:
+#                 print(f"API Error: Status Code {response.status_code} - {response.text}")
+#                 refined_query = user_query
+#                 optimized_hashtags = hashtags
+        
+#         except Exception as e:
+#             print(f"Error calling Gemini AI API: {e}")
+#             refined_query = user_query
+#             optimized_hashtags = hashtags
+    
+#     else:
+#         # No refinement - Keep the original query and hashtags
+#         refined_query = user_query
+#         optimized_hashtags = hashtags
+    
+#     # Display the final results
+#     print("\nRefined Query:", refined_query)
+#     print("Optimized Hashtags:", optimized_hashtags)
+
+#     return {"refined_query": refined_query, "optimized_hashtags": optimized_hashtags}
+
+
+# # Replace with a valid Gemini API key
+# api_key = "AIzaSyBaANl7m1QamNyJZZHUUKbulV-y45z6ohk"
+
+# # Run the function
+# refined_data = refine_query_and_hashtags(api_key)
+
+
+
+# import requests
+# import re
+
+# def refine_query_and_hashtags():
+#     GEMINI_API_KEY = "AIzaSyBaANl7m1QamNyJZZHUUKbulV-y45z6ohk"  # Replace with your Gemini API key
+
+#     user_query = input("Enter your search query: ").strip()
+#     hashtags = input("Enter hashtags (comma-separated): ").strip().split(",")
+#     hashtags = [tag.strip() for tag in hashtags]
+
+#     print("\nOriginal Query:", user_query)
+#     print("Original Hashtags:", hashtags)
+
+#     use_gemini = input("\nDo you want to use Gemini AI for refining the query and hashtags? (yes/no): ").strip().lower()
+
+#     if use_gemini == "yes":
+#         try:
+#             ai_prompt = f"Refine the following search query and hashtags for better SEO, user engagement, and trending relevance.\nQuery: {user_query}\nHashtags: {hashtags}"
+#             print("\nSending the following prompt to Gemini AI:\n", ai_prompt)
+
+#             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+#             headers = {"Content-Type": "application/json"}
+#             request_data = {"contents": [{"parts": [{"text": ai_prompt}]}]}
+
+#             response = requests.post(url, headers=headers, json=request_data)
+#             response_data = response.json()
+
+#             # Debugging step: print the full response for insight
+#             print("\nFull API Response:", response_data)
+
+#             # Extract refined query and hashtags
+#             refined_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
+
+#             # Using regex to extract refined query options (if provided)
+#             query_matches = re.findall(r"\*\*Option \d.*?:\*\*\s*`(.*?)`", refined_text)
+#             refined_query = query_matches[0] if query_matches else user_query
+
+#             # Extracting recommended hashtags using regex
+#             hashtag_matches = re.findall(r"`#(.*?)`", refined_text)
+#             optimized_hashtags = list(set([f"#{tag}" for tag in hashtag_matches])) if hashtag_matches else hashtags
+
+#         except Exception as e:
+#             print(f"Error calling Gemini AI API: {e}")
+#             refined_query = user_query
+#             optimized_hashtags = hashtags
+#     else:
+#         refined_query = user_query
+#         optimized_hashtags = hashtags
+
+#     print("\nRefined Query:", refined_query)
+#     print("Optimized Hashtags:", optimized_hashtags)
+
+# # Run the function
+# refine_query_and_hashtags()
+
+
+
+
+
+# import requests
+# import json
+
+# GEMINI_API_KEY = 'AIzaSyBaANl7m1QamNyJZZHUUKbulV-y45z6ohk'
+
+# def refine_query_and_hashtags(query, hashtags, use_gemini):
+#     if not use_gemini.lower() == "yes":
+#         return query, hashtags  # Return input if not using Gemini AI
+    
+#     headers = {
+#         'Content-Type': 'application/json',
+#     }
+#     data = {
+#         "contents": [{
+#             "parts": [{"text": f"Refine the following search query and hashtags for better SEO, user engagement, and trending relevance.\nQuery: {query}\nHashtags: {hashtags}"}]
+#         }]
+#     }
+#     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    
+#     response = requests.post(url, headers=headers, data=json.dumps(data))
+    
+#     if response.status_code == 200:
+#         response_data = response.json()
+#         refined_response = response_data["candidates"][0]["content"]["parts"][0]["text"]
+
+#         # Extract refined query and hashtags
+#         refined_query = query
+#         refined_hashtags = hashtags
+        
+#         if "Query:" in refined_response and "Hashtags:" in refined_response:
+#             parts = refined_response.split("Hashtags:")
+#             refined_query = parts[0].split("Query:")[1].strip()
+#             refined_hashtags = parts[1].strip()
+        
+#         # Ensure refined_hashtags is a string and clean the hashtags
+#         if isinstance(refined_hashtags, str):
+#             refined_hashtags_list = [hashtag.strip("#") for hashtag in refined_hashtags.split(", ")]
+#         else:
+#             refined_hashtags_list = [hashtag.strip("#") for hashtag in refined_hashtags]
+
+#         return refined_query.strip(), refined_hashtags_list
+#     else:
+#         return f"API Error: Status Code {response.status_code} - {response.text}"
+
+# # User input for query and Gemini AI usage
+# query = input("Enter your search query: ")
+# hashtags_input = input("Enter your search hashtags (comma separated): ")
+# hashtags = hashtags_input.split(", ")
+
+# use_gemini = input("Do you want to use Gemini AI for refining the query and hashtags? (yes/no): ")
+
+# # Get the refined query and hashtags
+# refined_query, refined_hashtags = refine_query_and_hashtags(query, hashtags, use_gemini)
+
+# # Output final results
+# print("\nRefined Query:")
+# print(refined_query)
+# print("\nOptimized Hashtags:")
+# print(refined_hashtags)
+
+
+
 import requests
 import json
 
-def refine_query_and_hashtags(api_key):
-    """
-    Refines the user's search query and hashtags using Gemini AI if selected.
-    Parameters:
-    - api_key (str): API key for accessing Gemini AI.
-    Returns:
-    - dict: Refined search query and optimized hashtags (or original if no refinement).
-    """
-    
-    # User input for query and hashtags
-    user_query = input("Enter your search query: ").strip()
-    hashtags = input("Enter hashtags (comma-separated): ").strip().split(",")
-    hashtags = [tag.strip() for tag in hashtags]  # Clean hashtags
-    
-    print("\nOriginal Query:", user_query)
-    print("Original Hashtags:", hashtags)
-    
-    # Ask whether to use Gemini AI for refinement
-    use_gemini = input("\nDo you want to use Gemini AI for refining the query and hashtags? (yes/no): ").strip().lower()
-    
-    if use_gemini == "yes":
-        try:
-            # Define the prompt and request payload
-            ai_prompt = f"Refine the following search query and hashtags for better SEO, user engagement, and trending relevance.\nQuery: {user_query}\nHashtags: {hashtags}"
-            print("\nSending the following prompt to Gemini AI:\n", ai_prompt)
-            
-            request_data = {
-                "contents": [{"parts": [{"text": ai_prompt}]}]
-            }
-            
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            }
-            
-            # Correct Gemini API Endpoint (Use Google AI API)
-            response = requests.post(
-                f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={api_key}",
-                headers=headers,
-                json=request_data
-            )
-            
-            # Handle the API response
-            if response.status_code == 200:
-                ai_response = response.json()
-                print("\nGemini AI Response:", json.dumps(ai_response, indent=2))  # Debugging output
+GEMINI_API_KEY = 'AIzaSyBaANl7m1QamNyJZZHUUKbulV-y45z6ohk'
 
-                # Extracting refined query and hashtags from AI response
-                refined_query = ai_response.get("candidates", [{}])[0].get("content", user_query)
-                optimized_hashtags = [tag.lower().replace("#", "") for tag in hashtags]
-            else:
-                print(f"API Error: Status Code {response.status_code} - {response.text}")
-                refined_query = user_query
-                optimized_hashtags = hashtags
+def refine_query_and_hashtags(query, hashtags, use_gemini):
+    if not use_gemini.lower() == "yes":
+        return query, hashtags  # Return input if not using Gemini AI
+    
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    data = {
+        "contents": [{
+            "parts": [{"text": f"Refine the following search query and hashtags for better SEO, user engagement, and trending relevance. Only provide the refined query and hashtags without additional explanation.\nQuery: {query}\nHashtags: {hashtags}"}]
+        }]
+    }
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    
+    if response.status_code == 200:
+        response_data = response.json()
+        refined_response = response_data["candidates"][0]["content"]["parts"][0]["text"]
+
+        # Extract refined query and hashtags
+        refined_query = query
+        refined_hashtags = hashtags
         
-        except Exception as e:
-            print(f"Error calling Gemini AI API: {e}")
-            refined_query = user_query
-            optimized_hashtags = hashtags
-    
+        if "Query:" in refined_response and "Hashtags:" in refined_response:
+            parts = refined_response.split("Hashtags:")
+            refined_query = parts[0].split("Query:")[1].strip()
+            refined_hashtags = parts[1].strip()
+
+        # Ensure refined_hashtags is a string and clean the hashtags
+        if isinstance(refined_hashtags, str):
+            refined_hashtags_list = [hashtag.strip("#") for hashtag in refined_hashtags.split(", ")]
+        else:
+            refined_hashtags_list = [hashtag.strip("#") for hashtag in refined_hashtags]
+
+        return refined_query.strip(), refined_hashtags_list
     else:
-        # No refinement - Keep the original query and hashtags
-        refined_query = user_query
-        optimized_hashtags = hashtags
-    
-    # Display the final results
-    print("\nRefined Query:", refined_query)
-    print("Optimized Hashtags:", optimized_hashtags)
+        return f"API Error: Status Code {response.status_code} - {response.text}"
 
-    return {"refined_query": refined_query, "optimized_hashtags": optimized_hashtags}
+# User input for query and Gemini AI usage
+query = input("Enter your search query: ")
+hashtags_input = input("Enter your search hashtags (comma separated): ")
+hashtags = hashtags_input.split(", ")
 
+use_gemini = input("Do you want to use Gemini AI for refining the query and hashtags? (yes/no): ")
 
-# Replace with a valid Gemini API key
-api_key = "AIzaSyBaANl7m1QamNyJZZHUUKbulV-y45z6ohk"
+# Get the refined query and hashtags
+refined_query, refined_hashtags = refine_query_and_hashtags(query, hashtags, use_gemini)
 
-# Run the function
-refined_data = refine_query_and_hashtags(api_key)
+# Output final results
+print("\nRefined Query:")
+print(refined_query)
+print("\nOptimized Hashtags:")
+print(refined_hashtags)
