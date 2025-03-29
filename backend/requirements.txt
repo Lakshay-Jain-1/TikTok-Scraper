@@ -14,3 +14,4 @@ rich
 questionary
 opencv-python
 python-vlc
+google-generativeai
