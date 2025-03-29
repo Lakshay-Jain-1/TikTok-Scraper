@@ -149,7 +149,7 @@ def refine_query_and_hashtags(api_key):
     - api_key (str): API key for accessing Gemini AI.
     
     Returns:
-    - dict: Refined search query and optimized hashtags.
+    - dict: Refined search query and optimized hashtags (or original if no refinement).
     """
     
     # Prompt the user to enter a search query and hashtags
@@ -172,18 +172,11 @@ def refine_query_and_hashtags(api_key):
         refined_query = f"Explore {user_query} - Latest Insights & Reviews"
         optimized_hashtags = [f"{tag.lower()}trend" if len(tag) > 3 else f"{tag.lower()}buzz" for tag in hashtags]
     else:
-        # Local refinement without Gemini AI
-        refined_query = f"Discover {user_query} - Trending Updates & Insights"
-        optimized_hashtags = []
-        for tag in hashtags:
-            if len(tag) <= 3:  # Short tags get a "buzz" suffix
-                optimized_hashtags.append(f"{tag.lower()}buzz")
-            elif "ai" in tag.lower():  # Special treatment for AI-related tags
-                optimized_hashtags.append(f"{tag.lower()}future")
-            else:  # Longer tags get engagement-boosting suffixes
-                optimized_hashtags.append(f"{tag.lower()}trending")
+        # No refinement - Keep the original query and hashtags
+        refined_query = user_query
+        optimized_hashtags = hashtags
     
-    # Display the refined results
+    # Display the final results
     print("\nRefined Query:", refined_query)
     print("Optimized Hashtags:", optimized_hashtags)
 
