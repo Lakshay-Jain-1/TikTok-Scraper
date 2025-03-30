@@ -1,6 +1,7 @@
 import questionary
 from modules.setup import setup_vlc
 from modules.settings import settings_menu
+from modules.env import update_Api_keys
 
 settings_menu()
 setup_vlc()
@@ -18,4 +19,4 @@ import main
 #     "Please enter the maximum number of results you want (choose a number):"
 # ).ask()
 
-main.main(searchQueries.split(","), hashtags.split(","), 30)
+main.main(searchQueries.split(","), hashtags.split(","), 30)    
