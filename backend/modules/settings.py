@@ -118,6 +118,7 @@ def settings_menu():
             )
             temp_settings.update(new_limits)
         elif action == "save":
+            save_global_settings(temp_settings)
             return temp_settings
         elif action == "exit":
             return None
