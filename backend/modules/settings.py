@@ -3,10 +3,11 @@ import json
 from pathlib import Path
 import os
 
+Settings_File = f"{os.getcwd()}/modules/app_settings.json"
 def load_global_settings() -> dict:
     """Load settings from a JSON file."""
     try:
-       with open(f"{os.getcwd()}/modules/app_settings.json", 'r') as file:
+       with open(Settings_File, 'r') as file:
         data = json.load(file)
         return data
 
@@ -16,8 +17,9 @@ def load_global_settings() -> dict:
 
 def save_global_settings(settings: dict):
     """Save settings to a JSON file."""
+
     try:
-        with open(SETTINGS_FILE, "w") as f:
+        with open(Settings_File, "w") as f:
             json.dump(settings, f, indent=2)
     except Exception as e:
         print(f"Error saving settings: {e}")
