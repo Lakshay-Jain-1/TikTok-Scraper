@@ -49,15 +49,19 @@ def extractVideoUrls(searchQueries=["Trump"], hashtags=["maga"], max_results=5):
 
     object={}
     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-        object[item.get("webVideoUrl")]= {
-            'musicId':item["musicMeta"]["musicId"],
-            'duration':item["videoMeta"]["duration"], 
-            'followers':item["authorMeta"]["fans"],
-            'hashtags':[ x["name"] for x in item["hashtags"]],
-            'views':item["playCount"],
-            "metadata":item
-            }
-        
+        object[item.get("webVideoUrl")] = {
+            'musicId': item.get("musicMeta", {}).get("musicId", 2443223422334),
+            'duration': item.get("videoMeta", {}).get("duration", 244),
+            'followers': item.get("authorMeta", {}).get("fans", 0),
+            'hashtags': [x.get("name", "") for x in item.get("hashtags", [])],
+            'views': item.get("playCount", 0),
+            'likes': item.get("diggCount", 0),
+            'comments': item.get("commentCount", 0),
+            'shares': item.get("shareCount", 0),
+            'username': item.get("authorMeta", {}).get("name", "Unknown"),
+            'videoUrl': item.get("videoUrl", ""),
+            'metadata': item
+        }
     validUrls=[]
     for videoUrl in object:
         if is_valid_video(videoUrl,object[videoUrl]):
