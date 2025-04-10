@@ -14,11 +14,9 @@ extractVideoUrls -> return a list of video url's eg ['https://www.tiktok.com/@pi
     second parameter
     hashtags -> it should be a list of string eg ["fyp"]
     third parameter
-    max_results (int): Maximum number of video links to retrieve per search.
+    max_results (int): Maximum number of pages will it scrap to retrieve per search.
 
     
-in second phase
-run this command winget install ffmpeg
 
 """
 
