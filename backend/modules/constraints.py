@@ -1,11 +1,18 @@
 import requests
 import json
 import os
+import sys
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for PyInstaller and development"""
+    base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+    return os.path.join(base_path, relative_path)
 
 global data
-with open(f"{os.getcwd()}/modules/app_settings.json", 'r') as file:
-    data = json.load(file)
 
+settings_path = resource_path("modules/app_settings.json")
+with open(settings_path, 'r') as file:
+    data = json.load(file)    
 
 NEWS_KEYWORDS = ["news", "breaking", "politics", "report", "update", "headline","c4news","Channel 4 News"]
 
