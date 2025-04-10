@@ -57,7 +57,7 @@ class VideoPlayer:
             self.start_input_handler()
             
             # Show instructions
-            self.console.print("Press Enter to stop playback...", style="bold yellow")
+            self.console.print("Click in this terminal window first, then press Enter to stop playback..", style="bold yellow")
             
             # Main loop
             self.root.mainloop()
