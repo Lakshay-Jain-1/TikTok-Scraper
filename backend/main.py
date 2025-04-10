@@ -31,6 +31,14 @@ def main(searchQueries, hashtags, max_results):
     print("Fetching TikTok video URLs...")
     video_urls = extractVideoUrls(searchQueries, hashtags, max_results)
     
+    # Free trial restriction: limiting the number of downloadable videos
+    if len(video_urls) > 150:
+        print(f"Due to the free trial, we can only download up to 150 videos. Skipping {len(video_urls) - 150} videos.")
+    else:
+        print(f"Downloading all {len(video_urls)} videos (within free trial limit).")
+        
+    video_urls = video_urls[:150]
+
     # 2nd phase
     if video_urls:
         print(f"Extracted {len(video_urls)} videos.")
