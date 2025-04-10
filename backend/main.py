@@ -40,6 +40,10 @@ def main(searchQueries, hashtags, max_results):
         
     video_urls = video_urls[:140]
 
+    if len(video_urls) == 0:
+        print("No TikTok URLs found. Exiting the program. Please try running the code again.")
+        exit()
+
     # 2nd phase
     if video_urls:
         print(f"Extracted {len(video_urls)} videos.")

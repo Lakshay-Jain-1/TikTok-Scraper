@@ -21,6 +21,9 @@ def merging():
         clip = VideoFileClip(str(video_path))
         clips.append(clip)
     
+    if len(clips)==0:
+        exit()
+
     # Concatenate video clips using the "compose" method to handle different resolutions
     final_clip = concatenate_videoclips(clips, method="compose")
     
