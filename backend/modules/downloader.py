@@ -13,142 +13,221 @@ load_dotenv()
 console = Console()
 API_TOKEN = os.getenv('DOWNLOAD_TIKTOK_API_TOKEN')
 
-# RapidAPI credentials and endpoint
+# RapidAPI configuration
 API_URL = "https://tiktok-video-downloader-api.p.rapidapi.com/media"
 HEADERS = {
     "x-rapidapi-key": str(API_TOKEN),
     "x-rapidapi-host": "tiktok-video-downloader-api.p.rapidapi.com"
 }
 
-# Folder to store downloads
 DOWNLOAD_FOLDER = "downloads"
-
-# Ensure the downloads folder exists
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-def get_download_url(video_url):
-    """Fetches the download URL from the RapidAPI endpoint."""
-    try:
-        response = requests.get(API_URL, headers=HEADERS, params={"videoUrl": video_url})
-        response.raise_for_status()
-        data = response.json()
+class VideoPlayer:
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.player = None
+        self.instance = None
+        self.player_active = False
+        self.stop_event = threading.Event()
+        self.root = None
+        self.input_thread = None
+        self.console = Console()
+
+    def play(self):
+        """Initialize and start video playback"""
+        try:
+            # Create Tkinter root window
+            self.root = tk.Tk()
+            self.root.title("Video Preview")
+            self.root.geometry("800x600+100+100")
+            self.root.protocol("WM_DELETE_WINDOW", self.safe_shutdown)
+
+            # Video frame setup
+            video_frame = tk.Frame(self.root, bg="black")
+            video_frame.pack(fill=tk.BOTH, expand=True)
+
+            # VLC initialization
+            self.init_vlc(video_frame)
+            
+            # Start playback monitoring
+            self.start_playback()
+            
+            # Start input handling
+            self.start_input_handler()
+            
+            # Show instructions
+            self.console.print("Press Enter to stop playback...", style="bold yellow")
+            
+            # Main loop
+            self.root.mainloop()
+
+        except Exception as e:
+            self.console.print(f"🚨 Playback error: {e}", style="bold red")
+        finally:
+            self.cleanup()
+
+    def init_vlc(self, video_frame):
+        """Initialize VLC media player"""
+        vlc_options = [
+            '--quiet',
+            '--no-osd',
+            '--avcodec-hw=any',
+            '--drop-late-frames',
+            '--skip-frames'
+        ]
         
-        if "downloadUrl" in data:
-            return data["downloadUrl"]
+        self.instance = vlc.Instance(*vlc_options)
+        self.player = self.instance.media_player_new()
+        media = self.instance.media_new(self.filepath)
+        self.player.set_media(media)
+
+        # Platform-specific window handling
+        if platform.system() == "Windows":
+            self.player.set_hwnd(video_frame.winfo_id())
         else:
-            print(f"❌ Download URL not found for: {video_url}")
-            return None
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Error fetching download URL: {e}")
+            self.player.set_xwindow(video_frame.winfo_id())
+
+        self.player.play()
+        self.player_active = True
+
+    def start_playback(self):
+        """Start playback monitoring"""
+        def check_playback():
+            if self.stop_event.is_set() or not self.player_active:
+                return
+            
+            try:
+                state = self.player.get_state()
+                if state in [vlc.State.Ended, vlc.State.Stopped, vlc.State.Error]:
+                    self.safe_shutdown()
+                else:
+                    self.root.after(100, check_playback)
+            except Exception as e:
+                self.console.print(f"🚨 State check error: {e}", style="bold red")
+                self.safe_shutdown()
+
+        self.root.after(100, check_playback)
+
+    def start_input_handler(self):
+        """Handle terminal input with proper synchronization"""
+        def input_listener():
+            try:
+                input()  # Wait for Enter press
+                self.root.after(0, self.safe_shutdown)
+            except Exception as e:
+                self.console.print(f"🚨 Input error: {e}", style="bold red")
+
+        self.input_thread = threading.Thread(target=input_listener, daemon=True)
+        self.input_thread.start()
+
+    def safe_shutdown(self):
+        """Thread-safe shutdown procedure"""
+        if self.player_active:
+            try:
+                self.player.stop()
+                self.stop_event.set()
+                self.player_active = False
+                self.root.after(100, self.root.quit)
+            except Exception as e:
+                self.console.print(f"🚨 Shutdown error: {e}", style="bold red")
+
+    def cleanup(self):
+        """Resource cleanup"""
+        try:
+            if self.player:
+                self.player.release()
+            if self.instance:
+                self.instance.release()
+            if self.root:
+                self.root.destroy()
+        except Exception as e:
+            self.console.print(f"🚨 Cleanup error: {e}", style="bold red")
+
+def handle_user_feedback(filepath):
+    """Get user decision with timeout"""
+    try:
+        # Use readchar to avoid threading issues with input()
+        import readchar
+        print("Accept video? (y/n): ", end="", flush=True)
+        char = readchar.readchar().lower()
+        print(char)  # Echo the input
+        
+        if char != 'y':
+            os.remove(filepath)
+            console.print("🗑️ Video deleted", style="bold yellow")
+        else:
+            console.print("👍 Video accepted", style="bold green")
+    except Exception as e:
+        console.print(f"❌ Feedback error: {e}", style="bold red")
+
+def get_download_url(video_url):
+    """Fetch download URL from API"""
+    try:
+        response = requests.get(
+            API_URL,
+            headers=HEADERS,
+            params={"videoUrl": video_url},
+            timeout=10
+        )
+        response.raise_for_status()
+        return response.json().get("downloadUrl")
+    except Exception as e:
+        console.print(f"❌ API Error: {e}", style="bold red")
         return None
 
-def download_tiktok_video(download_url, filename):
-    """Downloads the TikTok video with a progress bar."""
+def download_video(download_url, filename):
+    """Download video with progress bar"""
     try:
-        response = requests.get(download_url, stream=True)
-        response.raise_for_status()
-        
-        total_size = int(response.headers.get("content-length", 0))
-        filepath = os.path.join(DOWNLOAD_FOLDER, filename)  # Save in the 'downloads' folder
+        with requests.get(download_url, stream=True, timeout=15) as response:
+            response.raise_for_status()
+            total_size = int(response.headers.get("content-length", 0))
+            filepath = os.path.join(DOWNLOAD_FOLDER, filename)
 
-        with open(filepath, "wb") as file, tqdm(
-            desc=filename,
-            total=total_size,
-            unit="B",
-            unit_scale=True,
-            unit_divisor=1024
-        ) as bar:
-            for chunk in response.iter_content(chunk_size=1024):
-                file.write(chunk)
-                bar.update(len(chunk))
-        
-        print(f"Download complete: {filepath}")
-        play_video_and_get_feedback(filepath)
-    except requests.exceptions.RequestException as e:
-        print(f"Error downloading video: {e}")
+            with open(filepath, "wb") as file, tqdm(
+                desc=filename,
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1024
+            ) as bar:
+                for chunk in response.iter_content(chunk_size=1024):
+                    file.write(chunk)
+                    bar.update(len(chunk))
+            
+            console.print(f"✅ Download complete: {filepath}", style="bold green")
+            return filepath
+    except Exception as e:
+        console.print(f" Download failed: {e}", style="bold red")
+        return None
 
-def play_video_and_get_feedback(filepath):
-    """VLC video player implementation with automatic setup"""
-    root = tk.Tk()
-    root.title("Video Preview")
-    root.geometry("400x300+100+100")
 
-    video_frame = tk.Frame(root, bg="black")
-    video_frame.pack(fill=tk.BOTH, expand=True)
 
-    # Configure VLC with platform-specific optimizations
-    vlc_options = [
-        '--quiet',
-        '--no-osd',
-        '--avcodec-hw=any',
-        '--drop-late-frames',
-        '--skip-frames'
-    ]
-
-    instance = vlc.Instance(*vlc_options)
-    player = instance.media_player_new()
-    media = instance.media_new(filepath)
-    player.set_media(media)
-
-    # Windows-specific window handling
-    if platform.system() == "Windows":
-        win_id = video_frame.winfo_id()
-        player.set_hwnd(win_id)
-    else:  # Linux/macOS
-        player.set_xwindow(video_frame.winfo_id())
-
-    player.play()
-
-    # Playback monitoring
-    stop_event = threading.Event()
-
-    def check_playback():
-        if stop_event.is_set() or player.get_state() == vlc.State.Ended:
-            root.quit()
-        else:
-            root.after(100, check_playback)
-
-    print("Press Enter in terminal to stop playback...")
+def process_video(video_url, index):
+    """Full processing pipeline for a single video"""
+    console.print(f"\n Processing Video {index}: {video_url}", style="bold blue")
     
-    # Input handling thread
-    def wait_for_enter():
-        input()
-        player.stop()
-        stop_event.set()
-
-    threading.Thread(target=wait_for_enter, daemon=True).start()
-    root.after(100, check_playback)
-    root.mainloop()
-
-    # Cleanup
-    player.release()
-    root.destroy()
-
-    # User feedback
-    choice = input("Accept video? (y/n): ").lower()
-    if choice == 'y':
-        print("Video accepted.")
-    else:
-        try:
-            os.remove(filepath)
-            print("Video deleted.")
-        except Exception as e:
-            print(f"Deletion error: {e}")
+    if download_url := get_download_url(video_url):
+        filename = f"tiktok_video_{index}.mp4"
+        if filepath := download_video(download_url, filename):
+            console.print(" Starting playback...", style="bold yellow")
+            VideoPlayer(filepath).play()
+            handle_user_feedback(filepath)
 
 def batch_download(video_urls):
-    """Downloads multiple TikTok videos from a list of URLs."""
-    for idx, video_url in enumerate(video_urls, start=1):
-        ## For testing purposes
-        # if idx==4:
-        #     console.print(
-        #         "To reduce the testing duration, only three videos will be downloaded",
-        #         style="bold white on blue" 
-        #     )
-        #     break
-        print(f"\n Processing Video {idx}/{len(video_urls)}: {video_url}")
-        download_url = get_download_url(video_url)
-        if download_url:
-            filename = f"tiktok_video_{idx}.mp4"
-            download_tiktok_video(download_url, filename)
-        else:
-            print(f"⚠️ Skipping video {idx} due to an error.")
+    """Process multiple videos with proper error handling"""
+    for index, url in enumerate(video_urls, start=1):
+        try:
+            process_video(url, index)
+        except Exception as e:
+            console.print(f" Skipping video {index} due to error: {e}", style="bold red")
+            continue
+
+if __name__ == "__main__":
+    # Example usage
+    test_urls = [
+        "https://www.tiktok.com/@amusingmichele/video/7491477001946025221",
+        "https://www.tiktok.com/@voteinorout/video/7489981612159946014"
+    ]
+    
+    batch_download(test_urls)

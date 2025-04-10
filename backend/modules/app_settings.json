@@ -2,5 +2,5 @@
   "min_view": 1000,
   "max_view": 10000000,
   "max_follower": 30000000,
-  "min_follower": 1000
+  "min_follower": 500
 }
