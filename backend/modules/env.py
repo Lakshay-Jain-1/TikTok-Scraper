@@ -9,7 +9,7 @@ choice=choice.lower().strip()
 
 def update_Api_keys():
     apiKeys = questionary.text(
-        "Enter your api keys api key1,api key2 eg:-apify_api_FKgR1TkkRsa6RlVgqCDxWxcwrPa4PY0wyQeP,1830b5b59bmsh9a4dc5077af3396p155ba7jsn200b149d6b93 "
+        "Enter your api keys eg:- apify_api_FKgR1TkkRsa6RlVgqCDxWxcwrPa4PY0wyQeP,1830b5b59bmsh9a4dc5077af3396p155ba7jsn200b149d6b93 "
     ).ask()
 
     apiKeys=apiKeys.strip()

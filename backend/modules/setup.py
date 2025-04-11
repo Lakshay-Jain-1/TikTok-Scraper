@@ -3,6 +3,8 @@ import requests
 import platform
 import subprocess
 import sys
+import os
+import shutil
 
 
 def setup_vlc():
@@ -67,3 +69,5 @@ def setup_vlc():
     except Exception as e:
         print(f"Automatic installation failed: {e}")
         return False
+
+

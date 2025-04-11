@@ -7,6 +7,7 @@ import tkinter as tk
 import platform
 import vlc
 from dotenv import load_dotenv
+import shutil
 
 load_dotenv()
 
@@ -21,7 +22,43 @@ HEADERS = {
 }
 
 DOWNLOAD_FOLDER = "downloads"
+HISTORY_FOLDER = "history"
+
+# Create downloads folder if it doesn't exist
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
+
+# Check for video files in downloads folder
+video_extensions = ('.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.webm')
+video_files = []
+for filename in os.listdir(DOWNLOAD_FOLDER):
+    if os.path.splitext(filename)[1].lower() in video_extensions:
+        video_files.append(os.path.join(DOWNLOAD_FOLDER, filename))
+
+# Move videos to history folder if any exist
+if video_files:
+    # Create history folder if needed
+    os.makedirs(HISTORY_FOLDER, exist_ok=True)
+    
+    # Move files with duplicate handling
+    moved_count = 0
+    for src_path in video_files:
+        filename = os.path.basename(src_path)
+        base, ext = os.path.splitext(filename)
+        dest_path = os.path.join(HISTORY_FOLDER, filename)
+        
+        # Handle existing files by appending a number
+        counter = 1
+        while os.path.exists(dest_path):
+            new_filename = f"{base}_{counter}{ext}"
+            dest_path = os.path.join(HISTORY_FOLDER, new_filename)
+            counter += 1
+        
+        shutil.move(src_path, dest_path)
+        moved_count += 1
+
+    print(f"Moved {moved_count} video(s) to {HISTORY_FOLDER}")
+else:
+    print("No videos found in downloads folder")
 
 class VideoPlayer:
     def __init__(self, filepath):
