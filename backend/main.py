@@ -33,10 +33,10 @@ def main(searchQueries, hashtags, max_results):
     video_urls = extractVideoUrls(searchQueries, hashtags, max_results)
     
     # Free trial restriction: limiting the number of downloadable videos
-    if len(video_urls) > 140:
-        print(f"Due to the free trial, we can only download up to 140 videos. Skipping {len(video_urls) - 140} videos.")
-    else:
-        print(f"Downloading all {len(video_urls)} videos (within free trial limit).")
+    # if len(video_urls) > 140:
+    #     print(f"Due to the free trial, we can only download up to 140 videos. Skipping {len(video_urls) - 140} videos.")
+    # else:
+    #     print(f"Downloading all {len(video_urls)} videos (within free trial limit).")
         
     video_urls = video_urls[:140]
 
