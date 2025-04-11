@@ -8,7 +8,7 @@ import platform
 import vlc
 from dotenv import load_dotenv
 import shutil
-
+import hashlib
 load_dotenv()
 
 console = Console()
@@ -245,7 +245,8 @@ def process_video(video_url, index):
     console.print(f"\n Processing Video {index}: {video_url}", style="bold blue")
     
     if download_url := get_download_url(video_url):
-        filename = f"tiktok_video_{index}.mp4"
+        hashed_url = hashlib.md5(video_url.encode()).hexdigest()
+        filename = f"tiktok_video_{hashed_url}_{index}.mp4"
         if filepath := download_video(download_url, filename):
             console.print(" Starting playback...", style="bold yellow")
             VideoPlayer(filepath).play()
