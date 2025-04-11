@@ -3,23 +3,9 @@ from modules.downloader import batch_download
 from modules.merge import merging ,count_videos_in_downloads
 from modules.query_hashtag_refiner import refine_query_and_hashtags
 from rich.console import Console
+
 console = Console()  
-"""
-Documentation 
 
-Function
-extractVideoUrls -> return a list of video url's eg ['https://www.tiktok.com/@pich.solikah/video/7481208166252891412']
-    has two parmeters
-    first parameter
-    searchQueries -> it should be a list of string eg ["Trump"]
-    second parameter
-    hashtags -> it should be a list of string eg ["fyp"]
-    third parameter
-    max_results (int): Maximum number of pages will it scrap to retrieve per search.
-
-    
-
-"""
 
 def main(searchQueries, hashtags, max_results):
     use_gemini = input("\nDo you want to use Gemini AI for refining the query and hashtags? (y/n): ").strip().lower() 
