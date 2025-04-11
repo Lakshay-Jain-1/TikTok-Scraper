@@ -22,23 +22,20 @@ extractVideoUrls -> return a list of video url's eg ['https://www.tiktok.com/@pi
 """
 
 def main(searchQueries, hashtags, max_results):
-    # use_gemini = input("\nDo you want to use Gemini AI for refining the query and hashtags? (y/n): ").strip().lower() 
-    # # 0th phase Refining Queries
-    # if use_gemini == "y":
-    #     searchQueries,hashtags = refine_query_and_hashtags(searchQueries,hashtags)
-    #     print("Refined Queries",searchQueries)
-    #     print("Refined Hashtags",hashtags)
+    use_gemini = input("\nDo you want to use Gemini AI for refining the query and hashtags? (y/n): ").strip().lower() 
+    # 0th phase Refining Queries
+    if use_gemini == "y":
+        searchQueries,hashtags = refine_query_and_hashtags(searchQueries,hashtags)
+        print("Refined Queries",searchQueries)
+        print("Refined Hashtags",hashtags)
 
-    # # 1st phase (To fetch tik tok URL's)
-    # print("Fetching TikTok video URLs...")
-    # video_urls = extractVideoUrls(searchQueries, hashtags, max_results)
+    # 1st phase (To fetch tik tok URL's)
+    print("Fetching TikTok video URLs...")
+    video_urls = extractVideoUrls(searchQueries, hashtags, max_results)
             
-    # if len(video_urls) == 0:
-    #     print("No TikTok URLs found. Exiting the program. Please try running the code again.")
-    #     exit()
-    
-    video_urls=["https://www.tiktok.com/@amusingmichele/video/7491477001946025221",
-        "https://www.tiktok.com/@voteinorout/video/7489981612159946014"]
+    if len(video_urls) == 0:
+        print("No TikTok URLs found. Exiting the program. Please try running the code again.")
+        exit()
 
     # 2nd phase (To download videos using tik tok url's)
     if video_urls:
