@@ -19,4 +19,4 @@ import main
 #     "Please enter the maximum number of results you want (choose a number):"
 # ).ask()
 
-main.main(searchQueries.split(","), hashtags.split(","), 3)    
+main.main(searchQueries.split(","), hashtags.split(","), 30)    
