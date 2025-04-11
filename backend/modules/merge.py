@@ -2,7 +2,23 @@ from moviepy import VideoFileClip, concatenate_videoclips
 from pathlib import Path
 import os
 
+def count_videos_in_downloads():
+    DOWNLOAD_FOLDER = "downloads"
+    video_extensions = ('.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.webm')
+    
+    if not os.path.exists(DOWNLOAD_FOLDER):
+        return 0
+    
+    count = 0
+    for filename in os.listdir(DOWNLOAD_FOLDER):
+        file_path = os.path.join(DOWNLOAD_FOLDER, filename)
+        if os.path.isfile(file_path):  # Ensure it's a file, not directory
+            if os.path.splitext(filename)[1].lower() in video_extensions:
+                count += 1
+    return count
+
 def merging():
+
     # Get the absolute path to the directory where this script is located.
     script_dir = os.path.dirname(os.path.abspath(__file__))
     

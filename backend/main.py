@@ -1,7 +1,8 @@
 from modules.scraper import extractVideoUrls
 from modules.downloader import batch_download
-from modules.merge import merging
+from modules.merge import merging ,count_videos_in_downloads
 from modules.query_hashtag_refiner import refine_query_and_hashtags
+from rich.console import Console
 
 """
 Documentation 
@@ -28,7 +29,7 @@ def main(searchQueries, hashtags, max_results):
         print("Refined Queries",searchQueries)
         print("Refined Hashtags",hashtags)
 
-    # 1st phase 
+    # 1st phase (To fetch tik tok URL's)
     print("Fetching TikTok video URLs...")
     video_urls = extractVideoUrls(searchQueries, hashtags, max_results)
             
@@ -36,17 +37,24 @@ def main(searchQueries, hashtags, max_results):
         print("No TikTok URLs found. Exiting the program. Please try running the code again.")
         exit()
 
-    # 2nd phase
+    # 2nd phase (To download videos using tik tok url's)
     if video_urls:
         print(f"Extracted {len(video_urls)} videos.")
         batch_download(video_urls)
+        
+        Console.print(f"Manual test complete: {count_videos_in_downloads()} out of {len(video_urls)} videos downloaded successfully.", style="bold yellow")
 
-        # 3rd phase
-        merging()
+        # Phase 3: Ask user if they want to merge the downloaded videos
+        user_input = input("Do you want to merge the videos currently in the Downloads folder? Type 'y' for yes or 'n' for no: ")
+        if user_input.lower() == "y":
+            merging()
+            
     else:
         print("No videos found.")
-        raise Exception("No videos Found")
-    
+        raise Exception("No videos found to process.")
+
+    print("The process is now complete.")
+
 
 if __name__ == "__main__":
     main(searchQueries=["Trump"], hashtags=["maga"], max_results=5)
