@@ -248,7 +248,8 @@ def download_video(download_url, filename):
 
 def process_video(video_url, index):
     """Full processing pipeline for a single video"""
-    console.print(f"\n Processing Video {index}: {video_url}", style="bold blue")
+    console.print("\nPlease DO NOT type or press Enter while the video is downloading. Just follow the instructions.", style="bold red")
+    console.print(f"Processing Video {index}: {video_url}", style="bold blue")
     
     if download_url := get_download_url(video_url):
         hashed_url = hashlib.md5(video_url.encode()).hexdigest()
