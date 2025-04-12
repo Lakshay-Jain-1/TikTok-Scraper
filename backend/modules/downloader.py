@@ -215,12 +215,11 @@ def get_download_url(video_url):
 
 def download_video(download_url, filename):
     """Download video with progress bar"""
+    filepath = os.path.join(DOWNLOAD_FOLDER, filename)
     try:
         with requests.get(download_url, stream=True, timeout=15) as response:
             response.raise_for_status()
             total_size = int(response.headers.get("content-length", 0))
-            filepath = os.path.join(DOWNLOAD_FOLDER, filename)
-
             with open(filepath, "wb") as file, tqdm(
                 desc=filename,
                 total=total_size,
@@ -231,13 +230,20 @@ def download_video(download_url, filename):
                 for chunk in response.iter_content(chunk_size=1024):
                     file.write(chunk)
                     bar.update(len(chunk))
+                
             
             console.print(f"✅ Download complete: {filepath}", style="bold green")
             return filepath
     except Exception as e:
         console.print(f" Download failed: {e}", style="bold red")
+        # Clean up incomplete file if exists
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+                console.print(f"🗑️ Deleted incomplete file: {filepath}", style="bold yellow")
+            except Exception as delete_error:
+                console.print(f"❌ Failed to delete file: {delete_error}", style="bold red")
         return None
-
 
 
 def process_video(video_url, index):
