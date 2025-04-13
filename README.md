@@ -1,4 +1,4 @@
-# Project Documentation
+# Tik Tok Scraper
 
 ## Directory Structure
 
