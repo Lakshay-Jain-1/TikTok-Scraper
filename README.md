@@ -22,8 +22,7 @@ scraping video URLs, downloading, and merging videos — built for extensibility
 │   │   ├── settings.py           # General app settings  
 │   │   └── setup.py              # Initial setup logic  
 │   ├── readme.md                 # Backend-specific documentation  
-│   └── requirements.txt          # Python dependencies  
-├── documentation.md              # Full project documentation (you're reading it)  
+│   └── requirements.txt          # Python dependencies    
 ├── run.bat                       # Batch script to run the CLI (experimental)
 ```
 
