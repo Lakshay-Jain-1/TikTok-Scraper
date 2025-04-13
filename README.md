@@ -21,7 +21,6 @@ scraping video URLs, downloading, and merging videos — built for extensibility
 │   │   ├── scraper.py            # Extracts TikTok video URLs from given inputs  
 │   │   ├── settings.py           # General app settings  
 │   │   └── setup.py              # Initial setup logic  
-│   ├── readme.md                 # Backend-specific documentation  
 │   └── requirements.txt          # Python dependencies    
 ├── run.bat                       # Batch script to run the CLI (experimental)
 ```
